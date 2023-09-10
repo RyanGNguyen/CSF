@@ -85,30 +85,27 @@ UInt256 uint256_add(UInt256 left, UInt256 right) {
   for (unsigned i = 0; i < 8; ++i) {
     uint32_t leftval = uint256_get_bits(left, i);
     uint32_t rightval = uint256_get_bits(right, i);
-    uint32_t sum_val;
-
-    sum_val = leftval + rightval + carry; 
+    uint32_t sum_val = leftval + rightval + carry; 
+    sum.data[i] = sum_val; 
     if (sum_val < leftval) {
       carry = 1; 
     } else {
       carry = 0; 
     }
-    sum.data[i] = sum_val; 
   }
   return sum;
 }
 
 // Compute the difference of two UInt256 values.
 UInt256 uint256_sub(UInt256 left, UInt256 right) {
-  UInt256 result;
-  // TODO: implement
-  return result;
+  return uint256_add(left, uint256_negate(right)); 
 }
 
 // Return the two's-complement negation of the given UInt256 value.
 UInt256 uint256_negate(UInt256 val) {
   UInt256 result;
-  // TODO: implement
+  //Figure out how you would invert the "bits" of a UInt256 value
+  //Does this mean inverting the bits of each uint32 value and adding 1? 
   return result;
 }
 
