@@ -67,15 +67,12 @@ int main(int argc, char **argv) {
   TEST(test_create_from_u32);
   TEST(test_create);
   TEST(test_create_from_hex);
-
-  /*
   TEST(test_format_as_hex);
   TEST(test_add);
   TEST(test_sub);
   TEST(test_negate);
   TEST(test_rotate_left);
   TEST(test_rotate_right);
-  */
 
   TEST_FINI();
 }

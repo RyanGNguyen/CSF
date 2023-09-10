@@ -36,14 +36,20 @@ UInt256 uint256_create(const uint32_t data[8]) {
 
 // Create a UInt256 value from a string of hexadecimal digits.
 UInt256 uint256_create_from_hex(const char *hex) {
-  UInt256 result;
-  for (unsigned i = 0; i < 8; ++i) {
-    char *buffer = (char*) malloc(8); 
-    int size = sizeof(hex) / sizeof(hex[0]);
-    strncpy(buffer, hex[size - 8 * (i+1) - 1], sizeof(buffer));
-    unsigned long val = strtol(buffer, NULL, 16);
+  UInt256 result = uint256_create_from_u32(0); 
+  int start; 
+  if (strlen(hex) >= 8) {
+    start = strlen(hex) - 8; 
+  } else {
+    start = 0;
+  }
+  for (unsigned i = 0; start >= 0 && i < 8; ++i) {
+    char *str = (char *) hex;
+    char buffer[9] = {'\0'};
+    strncpy(buffer, str + start, 8);
+    unsigned long val = strtoul(buffer, NULL, 16);
     result.data[i] = val;  
-    free(buffer); 
+    start -= 8; 
   }
   return result;
 }
@@ -52,7 +58,12 @@ UInt256 uint256_create_from_hex(const char *hex) {
 // given UInt256 value.
 char *uint256_format_as_hex(UInt256 val) {
   char *hex = NULL;
-  //TODO
+  for (unsigned i = 0; i < 8; ++i) {
+    char *buf = (char*) malloc(sizeof(char) * 9);
+    uint32_t val = uint256_get_bits(val, i);
+    sprintf(buf, "%x", val);   // format without leading 0s
+    sprintf(buf, "%08x", val); // format with leading 0s
+  }
   return hex;
 }
 
