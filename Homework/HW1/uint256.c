@@ -60,9 +60,11 @@ char *uint256_format_as_hex(UInt256 val) {
   char *hex = NULL;
   for (unsigned i = 0; i < 8; ++i) {
     char *buf = (char*) malloc(sizeof(char) * 9);
-    uint32_t val = uint256_get_bits(val, i);
-    sprintf(buf, "%x", val);   // format without leading 0s
-    sprintf(buf, "%08x", val); // format with leading 0s
+    uint32_t dig = uint256_get_bits(val, i);
+    sprintf(buf, "%x", dig);   // format without leading 0s
+    //sprintf(buf, "%08x", dig); format with leading 0s
+    strncat(hex, buf, 8); 
+    free(buf); 
   }
   return hex;
 }
