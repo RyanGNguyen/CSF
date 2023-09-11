@@ -64,11 +64,12 @@ char *uint256_format_as_hex(UInt256 val) {
   char *hex = (char*) malloc(sizeof(char) * 65);
   for (unsigned i = 0; i < 8; ++i) {
     char *buf = (char*) malloc(sizeof(char) * 9);
-    uint32_t dig = uint256_get_bits(val, i);
-    sprintf(buf, "%x", dig);   // format without leading 0s
+    uint32_t num = uint256_get_bits(val, i);
+    sprintf(buf, "%x", num);
     strncat(hex, buf, 8U); 
     free(buf); 
   }
+  // remove leading zeroes
   return hex;
 }
 
