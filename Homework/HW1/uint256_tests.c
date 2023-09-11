@@ -49,7 +49,8 @@ void test_get_bits(TestObjs *objs);
 void test_create_from_u32(TestObjs *objs);
 void test_create(TestObjs *objs);
 void test_create_from_hex(TestObjs *objs);
-void test_format_as_hex(TestObjs *objs);
+void test_find_start();
+void test_format_as_hex(TestObjs *objs); 
 void test_add(TestObjs *objs);
 void test_sub(TestObjs *objs);
 void test_negate(TestObjs *objs);
@@ -67,7 +68,8 @@ int main(int argc, char **argv) {
   TEST(test_create_from_u32);
   TEST(test_create);
   TEST(test_create_from_hex);
-  //TEST(test_format_as_hex);
+  TEST(test_find_start); 
+  TEST(test_format_as_hex);
   TEST(test_add);
   TEST(test_sub);
   TEST(test_negate);
@@ -171,6 +173,17 @@ void test_create_from_hex(TestObjs *objs) {
 
   UInt256 max = uint256_create_from_hex("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   ASSERT_SAME(objs->max, max);
+}
+
+void test_find_start() {
+  unsigned zero = uint256_find_start("0");
+  ASSERT(0U == zero);
+
+  unsigned one = uint256_find_start("1");
+  ASSERT(0U == one);
+
+  unsigned max = uint256_find_start("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+  ASSERT(56U == max);
 }
 
 void test_format_as_hex(TestObjs *objs) {

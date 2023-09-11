@@ -37,12 +37,7 @@ UInt256 uint256_create(const uint32_t data[8]) {
 // Create a UInt256 value from a string of hexadecimal digits.
 UInt256 uint256_create_from_hex(const char *hex) {
   UInt256 result = uint256_create_from_u32(0U); 
-  int start; 
-  if (strlen(hex) >= 8) {
-    start = strlen(hex) - 8; 
-  } else {
-    start = 0;
-  }
+  int start = uint256_find_start(hex); 
   for (unsigned i = 0; start >= 0 && i < 8; start -= 8, ++i) {
     char *str = (char *) hex;
     char buffer[9] = {'\0'};
@@ -53,16 +48,25 @@ UInt256 uint256_create_from_hex(const char *hex) {
   return result;
 }
 
+// Determine which part of a string of hexadecimal digits to copy from
+unsigned uint256_find_start(const char *hex) {
+  unsigned len = strlen(hex); 
+  if (len >= 8) {
+    return len - 8; 
+  } else {
+    return 0;
+  }
+}
+
 // Return a dynamically-allocated string of hex digits representing the
 // given UInt256 value.
 char *uint256_format_as_hex(UInt256 val) {
-  char *hex = NULL;
+  char *hex = (char*) malloc(sizeof(char) * 65);
   for (unsigned i = 0; i < 8; ++i) {
     char *buf = (char*) malloc(sizeof(char) * 9);
     uint32_t dig = uint256_get_bits(val, i);
     sprintf(buf, "%x", dig);   // format without leading 0s
-    //sprintf(buf, "%08x", dig); format with leading 0s
-    strncat(hex, buf, 8); 
+    strncat(hex, buf, 8U); 
     free(buf); 
   }
   return hex;
@@ -97,9 +101,7 @@ UInt256 uint256_add(UInt256 left, UInt256 right) {
 
 // Compute the difference of two UInt256 values.
 UInt256 uint256_sub(UInt256 left, UInt256 right) {
-  UInt256 comp = uint256_negate(right); 
-  UInt256 diff = uint256_add(left, comp); 
-  return diff; 
+  return uint256_add(left, uint256_negate(right));
 }
 
 // Return the two's-complement negation of the given UInt256 value.
