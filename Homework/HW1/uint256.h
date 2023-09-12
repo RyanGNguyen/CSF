@@ -35,7 +35,10 @@ UInt256 uint256_create(const uint32_t data[8]);
 UInt256 uint256_create_from_hex(const char *hex);
 
 // Determine which part of a string of hexadecimal digits to copy from
-unsigned uint256_find_start(const char *hex); 
+unsigned find_cut(const char *hex); 
+
+// Obtain a substring of given string 
+void slice(const char* str, char* result, unsigned start, unsigned end); 
 
 // Return a dynamically-allocated string of hex digits representing the
 // given UInt256 value.
