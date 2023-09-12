@@ -53,7 +53,9 @@ void test_find_cut();
 void test_slice(); 
 void test_format_as_hex(TestObjs *objs); 
 void test_add(TestObjs *objs);
+void test_add_big(); 
 void test_sub(TestObjs *objs);
+void test_sub_big(); 
 void test_negate(TestObjs *objs);
 void test_rotate_left(TestObjs *objs);
 void test_rotate_right(TestObjs *objs);
@@ -73,7 +75,9 @@ int main(int argc, char **argv) {
   TEST(test_slice); 
   TEST(test_format_as_hex);
   TEST(test_add);
+  TEST(test_add_big); 
   TEST(test_sub);
+  TEST(test_sub_big); 
   TEST(test_negate);
   TEST(test_rotate_left);
   TEST(test_rotate_right);
@@ -242,6 +246,11 @@ void test_add(TestObjs *objs) {
   ASSERT_SAME(objs->zero, result);
 }
 
+void test_add_big() {
+  UInt256 left, right, result;
+  //TODO
+}
+
 void test_sub(TestObjs *objs) {
   UInt256 result;
 
@@ -253,6 +262,11 @@ void test_sub(TestObjs *objs) {
 
   result = uint256_sub(objs->zero, objs->one);
   ASSERT_SAME(objs->max, result);
+}
+
+void test_sub_big() {
+  UInt256 left, right, result;
+  //TODO
 }
 
 void test_negate(TestObjs *objs) {

@@ -80,6 +80,11 @@ char *uint256_format_as_hex(UInt256 val) {
   return hex;
 }
 
+char* r_lead_zeroes(const char* hex) {
+  //TODO
+  return; 
+}
+
 // Get 32 bits of data from a UInt256 value.
 // Index 0 is the least significant 32 bits, index 7 is the most
 // significant 32 bits.
