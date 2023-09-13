@@ -192,25 +192,6 @@ void test_find_cut() {
   ASSERT(56U == max);
 }
 
-void test_slice() {
-  const char *s = "abcdefgh"; 
-
-  char* test = malloc(sizeof(char) * 3); 
-  slice(s, test, 0, 2);
-  ASSERT(0 == strcmp("ab", test));
-  free(test); 
-
-  test = malloc(sizeof(char) * 3); 
-  slice(s, test, 6, 8);
-  ASSERT(0 == strcmp("gh", test));
-  free(test); 
-
-  test = malloc(sizeof(char) * 5); 
-  slice(s, test, 2, 6);
-  ASSERT(0 == strcmp("cdef", test));
-  free(test);
-}
-
 void test_format_as_hex(TestObjs *objs) {
   char *s;
 

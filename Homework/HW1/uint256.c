@@ -37,32 +37,24 @@ UInt256 uint256_create(const uint32_t data[8]) {
 // Create a UInt256 value from a string of hexadecimal digits.
 UInt256 uint256_create_from_hex(const char *hex) {
   UInt256 result = uint256_create_from_u32(0U); 
-  int cut = find_cut(hex);
-  char buf[9] = {'\0'}; 
-  slice(hex, buf, cut, strlen(hex));
-  char sub[57] = {'\0'}; 
-  slice(hex, sub, 0, cut);   
-  for (unsigned i = 0; i < 8 || strlen(sub) == 0; ++i) {
-    if (i > 0) {
-      slice(hex, buf, cut, strlen(sub));
-      slice(hex, sub, 0, cut);  
-    }
+  char * str = (char *) malloc(sizeof(char) * (strlen(hex) + 1)); 
+  strncpy(str, hex, strlen(hex)); 
+  int cut = find_cut(hex); 
+  for (unsigned i = 0; strlen(str) > 0 && i < 8; ++i) {
+    char buf[9] = {'\0'}; 
+    strncpy(buf, str + cut, 8); 
     unsigned long val = strtoul(buf, NULL, 16);
     result.data[i] = val;  
-    cut = find_cut(sub); 
+    *(str + cut) = '\0'; 
+    cut = find_cut(str); 
   }
+  free(str); 
   return result;
 }
 
 // Determine which part of a string of hexadecimal digits to copy from
 unsigned find_cut(const char *hex) {
   return strlen(hex) >= 8 ? strlen(hex) - 8 : 0; 
-}
-
-// Obtain a substring of given string 
-void slice(const char* str, char* result, unsigned start, unsigned end)
-{
-    strncpy(result, str + start, end - start);
 }
 
 // Return a dynamically-allocated string of hex digits representing the
@@ -76,7 +68,8 @@ char *uint256_format_as_hex(UInt256 val) {
     strncat(hex, buf, 8U); 
     free(buf); 
   }
-  // remove leading zeroes
+  char *sliced = r_lead_zeroes(hex); 
+  free(hex); 
   return hex;
 }
 
