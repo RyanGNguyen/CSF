@@ -122,17 +122,14 @@ UInt256 uint256_add(UInt256 left, UInt256 right) {
 // Compute the difference of two UInt256 values.
 UInt256 uint256_sub(UInt256 left, UInt256 right) {
     UInt256 result;
-    uint64_t borrow = 0; // Initialize borrow to 0
+    uint64_t borrow = 0;
 
     for (int i = 0; i < 8; i++) {
         uint64_t temp_diff = (uint64_t)left.data[i] - (uint64_t)right.data[i] - borrow;
-        if (temp_diff > left.data[i]) {
-            borrow = 1;
-        } else {
-            borrow = 0;
-        }
+        borrow = (temp_diff > (uint64_t)left.data[i]) ? 1 : 0;
         result.data[i] = (uint32_t)temp_diff;
     }
+
     return result;
 }
 
