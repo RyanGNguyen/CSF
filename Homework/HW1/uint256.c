@@ -61,13 +61,16 @@ unsigned find_cut(const char *hex) {
 // Return a dynamically-allocated string of hex digits representing the
 // given UInt256 value.
 char *uint256_format_as_hex(UInt256 val) {
-  char *hex = (char*) malloc(sizeof(char) * 9); 
-  for (unsigned i = 0; i < 8; i++) {
+  char *hex = (char*) malloc(sizeof(char) * 65); 
+  for (int i = 7; i >= 0; i--) {
     char *buf = (char*) malloc(sizeof(char) * 9);
     uint32_t num = uint256_get_bits(val, i);
     sprintf(buf, "%x", num);
-    hex = realloc(hex, sizeof(char) * (strlen(hex) + strlen(buf) + 1));
-    strncat(hex, buf, 8U); 
+    if (i == 7) {
+      strcpy(hex, buf); 
+    } else {
+      strcat(hex, buf); 
+    }
     free(buf); 
   }
   char *cut = r_lead_zeros(hex); 
