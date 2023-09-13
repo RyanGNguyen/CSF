@@ -131,7 +131,24 @@ UInt256 uint256_negate(UInt256 val) {
 // should be shifted back into the least significant bits.
 UInt256 uint256_rotate_left(UInt256 val, unsigned nbits) {
   UInt256 result;
-  // TODO: implement
+    nbits %= 256; //makes sure nbits within range
+    uint32_t carry = 0; // in case any bits are pushed beyond, brings it back to least sig
+    for (int i = 0; i < 8; i++) { //8 x 32 = 256
+        int srcIndex = (i - nbits / 32 + 8) % 8; //source index
+        int nextIndex = (i - 1 + 8) % 8; //
+
+        int bitShift = nbits % 32; //cal # of bits to shift in current 32 word
+
+        //performs the rotation, shifts val.data to left by bitShift
+        //0xFF... makes sure that only lower 32 bits are used
+        result.data[i] = (val. data [srcIndex] << bitShift) | ((val. data [nextIndex] > (32 - bitShift)) & 0xFFFFFFFF) ;
+        if (bitShift > 0 && i > 0) {
+            carry = (uint32_t) (val.data[nextIndex] >> (32 - bitShift));
+        }
+        }
+        if (nbits > 0) {
+            result.data [0] = carry;
+        }
   return result;
 }
 
@@ -140,6 +157,22 @@ UInt256 uint256_rotate_left(UInt256 val, unsigned nbits) {
 // should be shifted back into the most significant bits.
 UInt256 uint256_rotate_right(UInt256 val, unsigned nbits) {
   UInt256 result;
-  // TODO: implement
+    nbits %= 256;
+    uint32_t carry = 0;
+    for (int i = 0; i < 8; i++) {
+        //cal the source and next indices for bit manipulation
+        int srcIndex = (i + nbits / 32) % 8;
+        int nextIndex = (i + 1) % 8;
+
+        int bitShift = nbits % 32;
+
+        //performs the right rotation on the current word
+        result.data[i] = (val.data[srcIndex] >> bitShift) | ((val.data[nextIndex] << (32 - bitShift)) & 0xFFFFFFFF);
+
+        //updates the carry if necessary for bit wrap-around
+        if (bitShift > 0 && i < 7) {
+            carry = (uint32_t)(val.data[nextIndex] << (32 - bitShift));
+        }
+    }
   return result;
 }
