@@ -135,18 +135,19 @@ UInt256 uint256_negate(UInt256 val) {
 // should be shifted back into the least significant bits.
 UInt256 uint256_rotate_left(UInt256 val, unsigned nbits) {
     UInt256 result;
-    nbits %= 256; // Ensure nbits is within range
+    nbits %= 256; // Ensure nbits is within the range [0, 255]
+
+    // Calculate the number of full 32-bit word shifts
+    unsigned wordShift = nbits / 32;
+    unsigned bitShift = nbits % 32;
 
     for (int i = 0; i < 8; i++) {
-        int srcIndex = (i + nbits / 32) % 8;
-        int nextIndex = (srcIndex + 1) % 8;
-        int bitShift = nbits % 32;
+        // Calculate source and next indices for rotation
+        int srcIndex = (i + wordShift) % 8;
+        int nextIndex = (srcIndex - 1 + 8) % 8;
 
+        // Perform the rotation
         result.data[i] = (val.data[srcIndex] << bitShift) | (val.data[nextIndex] >> (32 - bitShift));
-
-        if (bitShift > 0 && nextIndex == 0) {
-            result.data[0] |= (val.data[7] >> (32 - bitShift));
-        }
     }
 
     return result;
