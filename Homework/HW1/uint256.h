@@ -42,7 +42,7 @@ unsigned find_cut(const char *hex);
 char *uint256_format_as_hex(UInt256 val);
 
 // Returns a string without leading zeroes
-char* r_lead_zeroes(const char* hex); 
+char* r_lead_zeros(const char* hex); 
 
 // Get 32 bits of data from a UInt256 value.
 // Index 0 is the least significant 32 bits, index 7 is the most

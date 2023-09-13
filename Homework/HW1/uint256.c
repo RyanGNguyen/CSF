@@ -63,7 +63,7 @@ unsigned find_cut(const char *hex) {
 char *uint256_format_as_hex(UInt256 val) {
   char *hex = (char*) malloc(sizeof(char) * 65);
   hex[64] = '\0'; 
-  for (int i = 7; i >= 0; i--) {
+  for (unsigned i = 0; i < 8; i++) {
     char *buf = (char*) malloc(sizeof(char) * 9);
     buf[8] = '\0'; 
     uint32_t num = uint256_get_bits(val, i);
@@ -71,23 +71,23 @@ char *uint256_format_as_hex(UInt256 val) {
     strncat(hex, buf, 8U); 
     free(buf); 
   }
-  char *cut = r_lead_zeroes(hex); 
+  char *cut = r_lead_zeros(hex); 
   free(hex); 
-  return cut; 
+  return cut;  
 }
 
-char* r_lead_zeroes(const char* hex) {
-  int c = -1;
-  char * cut = (char *) malloc(sizeof(char) * (strlen(hex) + 1));
-  cut[strlen(hex)] = '\0';  
-  for (unsigned i = 0; i < strlen(hex); i++) {
-      if (hex[i] != '0') {
-          c = i;
-          break;
-      }
+char* r_lead_zeros(const char* hex) {
+  char *str = (char*) malloc(sizeof(char) * (strlen(hex) + 1)); 
+  char* res = (char*) malloc(sizeof(char) * (strlen(hex) + 1)); 
+  strcpy(str, hex); 
+  unsigned counter = 0; 
+  while ((*str == '0') && (strlen(str) > 1)) {
+    str = str + 1;
+    counter++; 
   }
-  strcpy(cut, hex + c);
-  return cut; 
+  strcpy(res, str);
+  free(str - counter); 
+  return res; 
 }
 
 // Get 32 bits of data from a UInt256 value.

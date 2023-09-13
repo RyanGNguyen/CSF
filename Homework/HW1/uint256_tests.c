@@ -51,6 +51,7 @@ void test_create(TestObjs *objs);
 void test_create_from_hex(TestObjs *objs);
 void test_find_cut();
 void test_format_as_hex(TestObjs *objs); 
+void test_r_lead_zeros(); 
 void test_add(TestObjs *objs);
 void test_add_big(); 
 void test_sub(TestObjs *objs);
@@ -72,6 +73,7 @@ int main(int argc, char **argv) {
   TEST(test_create_from_hex);
   TEST(test_find_cut); 
   TEST(test_format_as_hex);
+  TEST(test_r_lead_zeros); 
   TEST(test_add);
   TEST(test_add_big); 
   TEST(test_sub);
@@ -197,7 +199,10 @@ void test_create_from_hex(TestObjs *objs) {
 
   UInt256 max = uint256_create_from_hex("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   ASSERT_SAME(objs->max, max);
-}
+
+  UInt256 overMax = uint256_create_from_hex("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+  ASSERT_SAME(objs->max, overMax);
+} 
 
 void test_find_cut() {
   unsigned zero = find_cut("0");
@@ -224,6 +229,22 @@ void test_format_as_hex(TestObjs *objs) {
   s = uint256_format_as_hex(objs->max);
   ASSERT(0 == strcmp("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", s));
   free(s);
+}
+
+void test_r_lead_zeros() {
+  char *s; 
+
+  s = r_lead_zeros("00001");
+  ASSERT(strcmp(s, "1") == 0);  
+  free(s); 
+
+  s = r_lead_zeros("00000");
+  ASSERT(strcmp(s, "0") == 0); 
+  free(s); 
+
+  s = r_lead_zeros("00100"); 
+  ASSERT(strcmp(s, "100") == 0); 
+  free(s); 
 }
 
 void test_add(TestObjs *objs) {
