@@ -315,7 +315,35 @@ void test_sub(TestObjs *objs) {
 
 void test_sub_big() {
   UInt256 left, right, result;
-  //TODO
+  left.data[0] = 358804277; 
+  left.data[1] = 2397415826; 
+  left.data[2] = 984297906; 
+  left.data[3] = 2631874677; 
+  left.data[4] = 2768016062; 
+  left.data[5] = 1099728279; 
+  left.data[6] = 171565651;
+  left.data[7] = 216617627;
+
+  right.data[0] = 693085755; 
+  right.data[1] = 4221850202;
+  right.data[2] = 2278432999;
+  right.data[3] = 1762056365; 
+  right.data[4] = 1274587653;
+  right.data[5] = 2279533133;
+  right.data[6] = 3155866231;
+  right.data[7] = 102267949; 
+
+  result.data[0] = 3960685818; 
+  result.data[1] = 2470532919; 
+  result.data[2] = 3000832202;
+  result.data[3] = 869818311;
+  result.data[4] = 1493428409;
+  result.data[5] = 3115162442;
+  result.data[6] = 1310666715; 
+  result.data[7] = 114349677; 
+
+  UInt256 val = uint256_sub(left, right); 
+  ASSERT_SAME(result, val); 
 }
 
 void test_negate(TestObjs *objs) {
