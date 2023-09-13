@@ -268,7 +268,36 @@ void test_add(TestObjs *objs) {
 
 void test_add_big() {
   UInt256 left, right, result;
-  //TODO
+
+  left.data[0] = 578143383; 
+  left.data[1] = 3022373270; 
+  left.data[2] = 2317548283; 
+  left.data[3] = 802415854; 
+  left.data[4] = 1104740857; 
+  left.data[5] = 570362247; 
+  left.data[6] = 536163630;
+  left.data[7] = 141897964; 
+
+  right.data[0] = 898721116; 
+  right.data[1] = 4234666945;
+  right.data[2] = 992380404;
+  right.data[3] = 3768763240; 
+  right.data[4] = 489176350;
+  right.data[5] = 3051736120;
+  right.data[6] = 3268930717;
+  right.data[7] = 87203299; 
+
+  result.data[0] = 1476864499; 
+  result.data[1] = 2962072919; 
+  result.data[2] = 3309928688;
+  result.data[3] = 276211798;
+  result.data[4] = 1593917208;
+  result.data[5] = 3622098367;
+  result.data[6] = 3805094347; 
+  result.data[7] = 229101263; 
+
+  UInt256 val = uint256_add(left, right); 
+  ASSERT_SAME(result, val); 
 }
 
 void test_sub(TestObjs *objs) {
