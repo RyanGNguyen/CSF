@@ -175,6 +175,16 @@ void test_create_from_hex(TestObjs *objs) {
   UInt256 one = uint256_create_from_hex("1");
   ASSERT_SAME(objs->one, one);
 
+  UInt256 rand = uint256_create_from_hex("a1b01c3c2c05180e934c15d2958f4d38"); 
+  ASSERT(rand.data[0] == 2509196600);
+  ASSERT(rand.data[1] == 2471237074); 
+  ASSERT(rand.data[2] == 738531342); 
+  ASSERT(rand.data[3] == 2712673340); 
+  ASSERT(rand.data[4] == 0); 
+  ASSERT(rand.data[5] == 0); 
+  ASSERT(rand.data[6] == 0); 
+  ASSERT(rand.data[7] == 0); 
+
   UInt256 max = uint256_create_from_hex("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   ASSERT_SAME(objs->max, max);
 }

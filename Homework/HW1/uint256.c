@@ -39,6 +39,7 @@ UInt256 uint256_create_from_hex(const char *hex) {
   UInt256 result = uint256_create_from_u32(0U); 
   char * str = (char *) malloc(sizeof(char) * (strlen(hex) + 1)); 
   strncpy(str, hex, strlen(hex)); 
+  str[strlen(hex)] = '\0';
   int cut = find_cut(hex); 
   for (unsigned i = 0; strlen(str) > 0 && i < 8; ++i) {
     char buf[9] = {'\0'}; 
