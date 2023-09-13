@@ -62,21 +62,32 @@ unsigned find_cut(const char *hex) {
 // given UInt256 value.
 char *uint256_format_as_hex(UInt256 val) {
   char *hex = (char*) malloc(sizeof(char) * 65);
-  for (unsigned i = 0; i < 8; ++i) {
+  hex[64] = '\0'; 
+  for (int i = 7; i >= 0; i--) {
     char *buf = (char*) malloc(sizeof(char) * 9);
+    buf[8] = '\0'; 
     uint32_t num = uint256_get_bits(val, i);
     sprintf(buf, "%x", num);
     strncat(hex, buf, 8U); 
     free(buf); 
   }
-  char *sliced = r_lead_zeroes(hex); 
+  char *cut = r_lead_zeroes(hex); 
   free(hex); 
-  return hex;
+  return cut; 
 }
 
 char* r_lead_zeroes(const char* hex) {
-  //TODO
-  return; 
+  int c = -1;
+  char * cut = (char *) malloc(sizeof(char) * (strlen(hex) + 1));
+  cut[strlen(hex)] = '\0';  
+  for (unsigned i = 0; i < strlen(hex); i++) {
+      if (hex[i] != '0') {
+          c = i;
+          break;
+      }
+  }
+  strcpy(cut, hex + c);
+  return cut; 
 }
 
 // Get 32 bits of data from a UInt256 value.
