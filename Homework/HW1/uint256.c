@@ -121,7 +121,19 @@ UInt256 uint256_add(UInt256 left, UInt256 right) {
 
 // Compute the difference of two UInt256 values.
 UInt256 uint256_sub(UInt256 left, UInt256 right) {
-  return uint256_add(left, uint256_negate(right));
+    UInt256 result;
+    uint64_t borrow = 0; // Initialize borrow to 0
+
+    for (int i = 0; i < 8; i++) {
+        uint64_t temp_diff = (uint64_t)left.data[i] - (uint64_t)right.data[i] - borrow;
+        if (temp_diff > left.data[i]) {
+            borrow = 1;
+        } else {
+            borrow = 0;
+        }
+        result.data[i] = (uint32_t)temp_diff;
+    }
+    return result;
 }
 
 // Return the two's-complement negation of the given UInt256 value.
