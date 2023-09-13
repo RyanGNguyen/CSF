@@ -103,20 +103,16 @@ uint32_t uint256_get_bits(UInt256 val, unsigned index) {
 
 // Compute the sum of two UInt256 values.
 UInt256 uint256_add(UInt256 left, UInt256 right) {
-  UInt256 sum = uint256_create_from_u32(0U);
-  unsigned carry = 0;
-  for (unsigned i = 0; i < 8; ++i) {
-    uint32_t leftval = uint256_get_bits(left, i);
-    uint32_t rightval = uint256_get_bits(right, i);
-    uint32_t sum_val = leftval + rightval + carry; 
-    sum.data[i] = sum_val; 
-    if (sum_val < leftval) {
-      carry = 1; 
-    } else {
-      carry = 0; 
+    UInt256 sum;
+    uint32_t carry = 0; // Initialize carry to 0
+
+    for (int i = 0; i < 8; i++) {
+        uint64_t temp_sum = (uint64_t)left.data[i] + (uint64_t)right.data[i] + (uint64_t)carry;
+        sum.data[i] = (uint32_t)temp_sum;
+        carry = (temp_sum > UINT32_MAX) ? 1 : 0;
     }
-  }
-  return sum;
+
+    return sum;
 }
 
 // Compute the difference of two UInt256 values.
