@@ -3,6 +3,8 @@
 * CSF Assignment 1
 * R. Nguyen
 * rnguye14@jhu.edu
+* J. Liu
+* jliu259@jhu.edu
 */
 
 #ifndef UINT256_H
