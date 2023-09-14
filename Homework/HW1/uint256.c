@@ -139,8 +139,8 @@ UInt256 uint256_negate(UInt256 val) {
 }
 
 // Return the result of rotating every bit in val nbits to
-// the left.  Any bits shifted past the most significant bit
-// should be shifted back into the least significant bits.
+// The left.  Any bits shifted past the most significant bit
+// Should be shifted back into the least significant bits.
 UInt256 uint256_rotate_left(UInt256 val, unsigned nbits) {
     UInt256 result;
     nbits %= 256; // Ensure nbits is within the range [0, 255]
@@ -151,11 +151,11 @@ UInt256 uint256_rotate_left(UInt256 val, unsigned nbits) {
 
     for (int i = 0; i < 8; i++) {
         // Calculate source and next indices for rotation
-        int srcIndex = (i + wordShift) % 8;
-        int nextIndex = (srcIndex - 1 + 8) % 8;
+        int sourceIndex = (i + wordShift) % 8;
+        int nextIndex = (sourceIndex - 1 + 8) % 8;
 
         // Perform the rotation
-        result.data[i] = (val.data[srcIndex] << bitShift) | (val.data[nextIndex] >> (32 - bitShift));
+        result.data[i] = (val.data[sourceIndex] << bitShift) | (val.data[nextIndex] >> (32 - bitShift));
     }
 
     return result;
@@ -168,16 +168,16 @@ UInt256 uint256_rotate_right(UInt256 val, unsigned nbits) {
     nbits %= 256;
     uint32_t carry = 0;
     for (int i = 0; i < 8; i++) {
-        //cal the source and next indices for bit manipulation
-        int srcIndex = (i + nbits / 32) % 8;
+        // Calculates the source and next indices for bit manipulation
+        int sourceIndex = (i + nbits / 32) % 8;
         int nextIndex = (i + 1) % 8;
 
         int bitShift = nbits % 32;
 
-        //performs the right rotation on the current word
-        result.data[i] = (val.data[srcIndex] >> bitShift) | ((val.data[nextIndex] << (32 - bitShift)) & 0xFFFFFFFF);
+        // Performs the right rotation on the current word
+        result.data[i] = (val.data[sourceIndex] >> bitShift) | ((val.data[nextIndex] << (32 - bitShift)) & 0xFFFFFFFF);
 
-        //updates the carry if necessary for bit wrap-around
+        // Updates the carry if necessary for bit wrap-around
         if (bitShift > 0 && i < 7) {
             carry = (uint32_t)(val.data[nextIndex] << (32 - bitShift));
         }
