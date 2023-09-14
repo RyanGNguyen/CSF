@@ -62,20 +62,17 @@ unsigned find_cut(const char *hex) {
 // given UInt256 value.
 char *uint256_format_as_hex(UInt256 val) {
   char *hex = (char*) malloc(sizeof(char) * 65); 
+  char* buf = (char*)malloc(9 * sizeof(char)); 
+  hex[0] = '\0'; 
   for (int i = 7; i >= 0; i--) {
-    char *buf = (char*) malloc(sizeof(char) * 9);
     uint32_t num = uint256_get_bits(val, i);
     sprintf(buf, "%x", num);
-    if (i == 7) {
-      strcpy(hex, buf); 
-    } else {
-      strcat(hex, buf); 
-    }
-    free(buf); 
+    strcat(hex, buf); 
   }
+  free(buf); 
   char *cut = r_lead_zeros(hex); 
   free(hex); 
-  return cut;  
+  return cut; 
 }
 
 char* r_lead_zeros(const char* hex) {
