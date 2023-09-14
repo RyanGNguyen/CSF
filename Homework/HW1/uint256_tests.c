@@ -362,6 +362,21 @@ void test_negate(TestObjs *objs) {
 void test_rotate_left(TestObjs *objs) {
   UInt256 result;
 
+  result = uint256_rotate_left(objs->msb_set, 256); 
+  ASSERT_SAME(objs->msb_set, result); 
+
+  UInt256 notOne;
+  notOne.data[0] = 0; 
+  notOne.data[1] = 0;
+  notOne.data[2] = 0;
+  notOne.data[3] = 0;
+  notOne.data[4] = 0;
+  notOne.data[5] = 0;
+  notOne.data[6] = 0;
+  notOne.data[7] = 1;
+  result = uint256_rotate_left(notOne, 32); 
+  ASSERT_SAME(objs->one, result); 
+
   // rotating the value with just the most significant bit set
   // one position to the left should result in the value equal to 1
   // (i.e., the value with only the least significant bit set)
@@ -383,6 +398,21 @@ void test_rotate_left(TestObjs *objs) {
 
 void test_rotate_right(TestObjs *objs) {
   UInt256 result;
+
+  result = uint256_rotate_right(objs->msb_set, 256); 
+  ASSERT_SAME(objs->msb_set, result); 
+
+  UInt256 notOne;
+  notOne.data[0] = 0; 
+  notOne.data[1] = 1;
+  notOne.data[2] = 0;
+  notOne.data[3] = 0;
+  notOne.data[4] = 0;
+  notOne.data[5] = 0;
+  notOne.data[6] = 0;
+  notOne.data[7] = 0;
+  result = uint256_rotate_right(notOne, 32); 
+  ASSERT_SAME(objs->one, result); 
 
   // rotating 1 right by 1 position should result in a value with just
   // the most-significant bit set
