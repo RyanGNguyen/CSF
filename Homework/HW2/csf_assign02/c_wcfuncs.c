@@ -41,7 +41,11 @@ uint32_t wc_hash(const unsigned char *w) {
 // of the other, it is considered as "less than". E.g.,
 // "hi" would compare as less than "high".
 int wc_str_compare(const unsigned char *lhs, const unsigned char *rhs) {
-  // TODO: implement
+  while(*lhs && (*lhs == *rhs)) {
+    lhs++;
+    rhs++;
+  }
+  return *(const unsigned char*)lhs - *(const unsigned char*)rhs;
 }
 
 // Copy NUL-terminated source string to the destination buffer.
