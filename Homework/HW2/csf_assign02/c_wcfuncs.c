@@ -118,7 +118,7 @@ int wc_readnext(FILE *in, unsigned char *w) {
       break;
     }
     //TODO: Figure out copying all c to w 
-  } while(1);
+  } while(c != '\0');
   return 0; 
 }
 
