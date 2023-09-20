@@ -140,12 +140,10 @@ void wc_tolower(unsigned char *w) {
 void wc_trim_non_alpha(unsigned char *w) {
   while (*w != '\0') {
     w++; 
-  }
-  w--; 
-  while (wc_isalpha(*w) != 1) {
+  } do {
     *w = '\0'; 
     w--; 
-  }
+  } while (wc_isalpha(*w) != 1); 
 }
 
 // Search the specified linked list of WordEntry objects for an object
