@@ -50,7 +50,16 @@ int wc_str_compare(const unsigned char *lhs, const unsigned char *rhs) {
 
 // Copy NUL-terminated source string to the destination buffer.
 void wc_str_copy(unsigned char *dest, const unsigned char *source) {
-  // TODO: implement
+  unsigned len = 0; 
+  while (*source != '\0') {
+    len++; 
+    source++; 
+  }
+  source -= len; 
+  for (unsigned i = 0; i < len; i++) {
+    *(dest + i) = *(source + i); 
+  }
+  *(dest + len) = '\0'; 
 }
 
 // Return 1 if the character code in c is a whitespace character,
