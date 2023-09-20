@@ -109,13 +109,30 @@ int wc_isalpha(unsigned char c) {
 // MAX_WORDLEN characters, then only the first MAX_WORDLEN
 // characters in the sequence should be stored in the array.
 int wc_readnext(FILE *in, unsigned char *w) {
-  // TODO: implement
+  int c; 
+  if (in == NULL) {
+    return 0; 
+  } do {
+    c = fgetc(in);
+    if (c == -1) { //EOF == -1
+      break;
+    }
+    //TODO: Figure out copying all c to w 
+  } while(1);
+  return 0; 
 }
 
 // Convert the NUL-terminated character string in the array
 // pointed-to by w so that every letter is lower-case.
 void wc_tolower(unsigned char *w) {
-  // TODO: implement
+  while (*w != '\0') {
+    if (wc_isalpha(*w)) {
+      if ((*w >= 'A') && (*w <= 'Z')) {
+        *w = *w + 32; //Segmentation Fault???
+      }
+    }
+    w++; 
+  }
 }
 
 // Remove any non-alphaabetic characters from the end of the
