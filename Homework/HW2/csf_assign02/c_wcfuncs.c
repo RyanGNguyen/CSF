@@ -126,10 +126,8 @@ int wc_readnext(FILE *in, unsigned char *w) {
 // pointed-to by w so that every letter is lower-case.
 void wc_tolower(unsigned char *w) {
   while (*w != '\0') {
-    if (wc_isalpha(*w)) {
-      if ((*w >= 'A') && (*w <= 'Z')) {
-        *w = *w + 32; 
-      }
+    if ((*w >= 'A') && (*w <= 'Z')) {
+      *w = *w + 32; 
     }
     w++; 
   }
