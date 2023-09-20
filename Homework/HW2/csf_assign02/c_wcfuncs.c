@@ -65,7 +65,17 @@ void wc_str_copy(unsigned char *dest, const unsigned char *source) {
 //   '\f'
 //   '\v'
 int wc_isspace(unsigned char c) {
-  // TODO: implement
+  int ret; 
+  switch(c) {
+    case ' ': case '\t': case '\r':
+    case '\n': case '\f': case '\v':
+      ret = 1; 
+      break; 
+    default: 
+      ret = 0; 
+      break;
+  }
+  return ret; 
 }
 
 // Return 1 if the character code in c is an alphabetic character
