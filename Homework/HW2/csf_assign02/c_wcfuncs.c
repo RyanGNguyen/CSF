@@ -128,7 +128,7 @@ void wc_tolower(unsigned char *w) {
   while (*w != '\0') {
     if (wc_isalpha(*w)) {
       if ((*w >= 'A') && (*w <= 'Z')) {
-        *w = *w + 32; //Segmentation Fault???
+        *w = *w + 32; 
       }
     }
     w++; 
@@ -138,7 +138,7 @@ void wc_tolower(unsigned char *w) {
 // Remove any non-alphaabetic characters from the end of the
 // NUL-terminated character string pointed-to by w.
 void wc_trim_non_alpha(unsigned char *w) {
-  // TODO: implement
+
 }
 
 // Search the specified linked list of WordEntry objects for an object
