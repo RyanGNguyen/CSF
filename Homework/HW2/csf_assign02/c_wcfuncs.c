@@ -109,17 +109,23 @@ int wc_isalpha(unsigned char c) {
 // MAX_WORDLEN characters, then only the first MAX_WORDLEN
 // characters in the sequence should be stored in the array.
 int wc_readnext(FILE *in, unsigned char *w) {
-  int c; 
-  if (in == NULL) {
+  unsigned counter = 0; 
+  if (in == NULL) { 
     return 0; 
   } do {
-    c = fgetc(in);
-    if (c == -1) { //EOF == -1
-      break;
-    }
-    //TODO: Figure out copying all c to w 
-  } while(c != '\0');
-  return 0; 
+    char c = fgetc(in);
+    if ((wc_isspace(c) == 0) && (c != -1)) { //Proceeds if character read in is not a space nor EOF
+      *(w + counter) = c; 
+      counter++; 
+    } else { //Ends if conditions are not fulfilled 
+      if ((c == -1) && (counter == 0)) { //Return 0 because only EOF was read in
+        return 0; 
+      }
+      *(w + counter) = '\0'; //If character is space or EOF, add null character to finish returned word
+      break; 
+    } 
+  } while (counter < MAX_WORDLEN); 
+  return 1; 
 }
 
 // Convert the NUL-terminated character string in the array
