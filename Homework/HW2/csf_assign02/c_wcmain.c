@@ -61,10 +61,38 @@ int main(int argc, char **argv) {
   printf("Unique words read: %u\n", (unsigned int) unique_words);
   printf("Most frequent word: %s (%u)\n", (const char *) best_word, best_word_count);
 
-  // TODO: make sure file is closed (if one was opened)
-  // TODO: make sure memory is freed
+  // Closes file, freeing memory
+    if (argc == 2) {
+        fclose(file);
+    }
+  // Basically going through & freeing all the nodes
+    for (int i = 0; i < HASHTABLE_SIZE; i++) {
+        wc_free_chain(buckets[i]);
+    }
 
   return 0;
 }
 
 // TODO: definitions of helper functions
+
+void process_input_word(
+        struct WordEntry *buckets[],
+        unsigned char *word,
+        uint32_t *unique_words,
+        const unsigned char **best_word,
+        uint32_t *best_word_count
+) {
+    struct WordEntry *entry = wc_dict_find_or_insert(buckets, HASHTABLE_SIZE, word);
+
+    // Increment the count for this word since we've found/added it once more.
+    entry->count++;
+
+    if (entry->count == 1) {
+        (*unique_words)++;
+    }
+
+    if (entry->count > *best_word_count) {
+        *best_word = entry->word;
+        *best_word_count = entry->count;
+    }
+}
