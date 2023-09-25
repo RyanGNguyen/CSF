@@ -113,24 +113,30 @@ wc_str_copy:
  */
 	.globl wc_isspace
 wc_isspace:
-	cmpl $sp, %dil  /*space*/
+	pushq %rbp 
+	movq %rsp, %rbp
+	subq $16, %rsp 
+
+	cmpb $sp, %dil  /*space*/
 	je .IsSpace
-	cmpl $st, %dil /*t*/
+	cmpb $st, %dil /*t*/
 	je .IsSpace
-	cmpl %sr, %dil /*r*/
+	cmpb $sr, %dil /*r*/
 	je .IsSpace
-	cmpl %sn, %dil /*n*/
+	cmpb $sn, %dil /*n*/
 	je .IsSpace
-	cmpl $sf, %dil /*f*/
+	cmpb $sf, %dil /*f*/
 	je .IsSpace
-	cmpl $sv, %dil /*v*/
+	cmpb $sv, %dil /*v*/
 	je .IsSpace
-	movl $0, %al
+	movl $0, %eax
 	jmp .SpaceDone
 .IsSpace:
-	movl $1, %al
+	movl $1, %eax
 	jmp .SpaceDone
 .SpaceDone:
+	addq $16, %rsp 
+	popq %rbp 
 	ret
 
 /*
