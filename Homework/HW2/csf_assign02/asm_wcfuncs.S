@@ -61,9 +61,27 @@ wc_hash:
  * C function prototype:
  *    int wc_str_compare(const unsigned char *lhs, const unsigned char *rhs);
  */
-	.globl wc_str_compare
+	.globl wc_str_compare //need to complete this
 wc_str_compare:
-	/* TODO: implement */
+.loop:
+movzbq (%rsi), %r8b         # load byte from lhs into r8
+movzbq (%rdi), %r9b         # load byte from rhs into r9
+cmpb %r9b, %r8b            # compare the two bytes
+jne .not_equal              # if not equal, determined order
+testb %r8b, %r8b            # check if reached the null terminator of lhs
+je .done                    # if yes, strings are equal or lhs is a prefix
+inc %rsi                    # move to next character of lhs
+inc %rdi                    # move to next character of rhs
+jmp .loop
+
+.not_equal:
+subl %r9d, %r8d             # calculate difference
+movl %r8d, %eax             # store difference in eax for return
+ret
+
+.done:
+xorl %eax, %eax             # strings are identical, return 0
+ret
 	ret
 
 /*
@@ -113,7 +131,7 @@ wc_isspace:
 	movl $1, %al
 	jmp .SpaceDone
 .SpaceDone:
-	ret         
+	ret
 
 /*
  * Return 1 if the character code in c is an alphabetic character
@@ -122,7 +140,9 @@ wc_isspace:
  * C function prototype:
  *    int wc_isalpha(unsigned char c);
  */
-	.globl wc_isalpha
+
+
+	.globl wc_isalpha //need to complete this
 wc_isalpha:
 	cmpl $65, %edi  
 	jae .IsAlpha
