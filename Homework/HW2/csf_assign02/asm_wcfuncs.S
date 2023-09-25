@@ -15,6 +15,12 @@
 
 	.section .rodata
 /* Define any string constants or read-only data here */
+sp:.string " "
+st:.string "\t"
+sr:.string "\r"
+sn:.string "\n"
+sf:.string "\f"
+sv:.string "\v"
 
 	.section .text
 
@@ -89,8 +95,25 @@ wc_str_copy:
  */
 	.globl wc_isspace
 wc_isspace:
-	/* TODO: implement */
-	ret
+	cmpl $sp, %dil  /*space*/
+	je .IsSpace
+	cmpl $st, %dil /*t*/
+	je .IsSpace
+	cmpl %sr, %dil /*r*/
+	je .IsSpace
+	cmpl %sn, %dil /*n*/
+	je .IsSpace
+	cmpl $sf, %dil /*f*/
+	je .IsSpace
+	cmpl $sv, %dil /*v*/
+	je .IsSpace
+	movl $0, %al
+	jmp .SpaceDone
+.IsSpace:
+	movl $1, %al
+	jmp .SpaceDone
+.SpaceDone:
+	ret         
 
 /*
  * Return 1 if the character code in c is an alphabetic character
@@ -101,7 +124,13 @@ wc_isspace:
  */
 	.globl wc_isalpha
 wc_isalpha:
-	/* TODO: implement */
+	cmpl $65, %edi  
+	jae .IsAlpha
+	/*TODO*/
+	jmp .AlphaDone
+.IsAlpha:
+.NotAlpha:
+.AlphaDone:
 	ret
 
 /*
