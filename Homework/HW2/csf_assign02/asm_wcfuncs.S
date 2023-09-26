@@ -63,24 +63,6 @@ wc_hash:
  */
 	.globl wc_str_compare //need to complete this
 wc_str_compare:
-	.loop:
-	movzwl [%di], %r8d         # load byte from lhs into r8d
-	movzwl [%si], %r9d         # load byte from rhs into r9d
-	cmpl %r9d, %r8d            # compare the two bytes
-	jne .not_equal              # if not equal, determined order
-	testl %r8d, %r8d            # check if reached the null terminator of lhs
-	je .done                    # if yes, strings are equal or lhs is a prefix
-	inc %rdi                    # move to next character of lhs
-	inc %rsi                    # move to next character of rhs
-	jmp .loop
-
-	.not_equal:
-	subl %r9d, %r8d             # calculate difference
-	movl %r8d, %eax             # store difference in eax for return
-	ret
-
-	.done:
-	movl $0, %eax            # strings are identical, return 0
 	ret
 
 /*
@@ -112,22 +94,22 @@ wc_str_copy:
  */
 	.globl wc_isspace
 wc_isspace:
-	cmpl $9, %edi ; Compare with horizontal tab
-	je .IsSpace    ; Jump to Is Space 
-	cmpl $10, %edi ; Compare with new line
-	je .IsSpace    ; Jump to Is Space 
-	cmpl $11, %edi ; Compare with vertical tab
-	je .IsSpace    ; Jump to Is Space 
-	cmpl $12, %edi ; Compare to end of page
-	je .IsSpace    ; Jump to Is Space 
-	cmpl $13, %edi ; Compare with carriage return
-	je .IsSpace    ; Jump to Is Space 
-	cmpl $32, %edi ; Compare with space character
-	je .IsSpace    ; Jump to Is Space 
-	movl $0, %eax  ; Default for non-spaces to return 0
+	cmpl $9, %edi  /* Compare with horizontal tab */
+	je .IsSpace    /* Jump to Is Space */
+	cmpl $10, %edi /* Compare with new line */
+	je .IsSpace    /* Jump to Is Space */
+	cmpl $11, %edi /* Compare with vertical tab */
+	je .IsSpace    /* Jump to Is Space */
+	cmpl $12, %edi /* Compare to end of page */
+	je .IsSpace    /* Jump to Is Space */
+	cmpl $13, %edi /* Compare with carriage return */
+	je .IsSpace    /* Jump to Is Space */
+	cmpl $32, %edi /* Compare with space character */
+	je .IsSpace    /* Jump to Is Space */
+	movl $0, %eax  /* Default for non-spaces to return 0 */
 	ret             
 .IsSpace:
-	movl $1, %eax  ; Return 1 for space 
+	movl $1, %eax  /* Return 1 for space */
 	ret
 
 /*
@@ -141,19 +123,19 @@ wc_isspace:
 
 	.globl wc_isalpha
 wc_isalpha:
-	cmpb $'A', %dil   ; Compare with 'A' 
-	jb .NotAlpha      ; Not alpha if below 'A'
-	cmpb $'Z', %dil   ; Compare with 'Z'
-	jbe .IsAlpha      ; Is alpha since above 'A' and below or equal to 'Z'
-	cmpb $'a', %dil   ; Compare with 'a' 
-	jb .NotAlpha      ; Not alpha if above 'Z' and below 'a'
-	cmpb $'z', %dil   ; Compare with 'z'
-	jbe .IsAlpha      ; Is alpha if below or equal to 'z' and above/equal to 'a' 
+	cmpb $'A', %dil   /* Compare with 'A' */
+	jb .NotAlpha      /* Not alpha if below 'A' */
+	cmpb $'Z', %dil   /* Compare with 'Z' */
+	jbe .IsAlpha      /* Is alpha since above 'A' and below or equal to 'Z' */
+	cmpb $'a', %dil   /* Compare with 'a' */
+	jb .NotAlpha      /* Not alpha if above 'Z' and below 'a' */
+	cmpb $'z', %dil   /* Compare with 'z' */
+	jbe .IsAlpha      /* Is alpha if below or equal to 'z' and above/equal to 'a'  */
 .IsAlpha:
-	movl $1, %eax     ; Set return value to 1
+	movl $1, %eax     /* Set return value to 1 */ 
 	ret
 .NotAlpha:
-	movl $0, %eax     ; Set return value to 0
+	movl $0, %eax     /* Set return value to 0 */
 	ret
 
 /*
