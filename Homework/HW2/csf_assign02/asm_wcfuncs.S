@@ -15,12 +15,6 @@
 
 	.section .rodata
 /* Define any string constants or read-only data here */
-	sp:.string " "
-	st:.string "\t"
-	sr:.string "\r"
-	sn:.string "\n"
-	sf:.string "\f"
-	sv:.string "\v"
 
 	.section .text
 
@@ -63,7 +57,23 @@ wc_hash:
  */
 	.globl wc_str_compare //need to complete this
 wc_str_compare:
+	.Loop:
+	movzbl (%rdi), %r8d        /* Copies char from lhs and converts into integer in r8d */
+	movzbl (%rsi), %r9d         /* Copies char from rhs and converts into integer in r9d */
+	cmpl %r9d, %r8d            /* compare the two bytes */
+	jne .NotEqual              /* if not equal, determine order */
+	testl %r8d, %r8d           /* check if reached the null terminator of lhs */
+	je .AreEqual               /* if yes, strings are equal or lhs is a prefix */
+	inc %rdi                   /* move to next character of lhs */
+	inc %rsi                   /* move to next character of rhs */
+	jmp .Loop
+.NotEqual:
+	subl %r9d, %r8d            /* calculate difference */
+	movl %r8d, %eax            /* store difference in eax for return */
 	ret
+.AreEqual:
+	movl $0, %eax              /* strings are identical, return 0 */
+	ret 
 
 /*
  * Copy NUL-terminated source string to the destination buffer.
@@ -131,7 +141,7 @@ wc_isalpha:
 	jb .NotAlpha      /* Not alpha if above 'Z' and below 'a' */
 	cmpl $122, %edi   /* Compare with 'z' */
 	jbe .IsAlpha      /* Is alpha if below or equal to 'z' and above/equal to 'a'  */
-	jmp .NotAlpha
+	jmp .NotAlpha     /* Is not alpha if above 'z' */
 .IsAlpha:
 	movl $1, %eax     /* Set return value to 1 */ 
 	ret
