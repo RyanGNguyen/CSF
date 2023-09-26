@@ -123,14 +123,15 @@ wc_isspace:
 
 	.globl wc_isalpha
 wc_isalpha:
-	cmpb $'A', %dil   /* Compare with 'A' */
+	cmpl $65, %edi   /* Compare with 'A' */
 	jb .NotAlpha      /* Not alpha if below 'A' */
-	cmpb $'Z', %dil   /* Compare with 'Z' */
+	cmpl $90, %edi   /* Compare with 'Z' */
 	jbe .IsAlpha      /* Is alpha since above 'A' and below or equal to 'Z' */
-	cmpb $'a', %dil   /* Compare with 'a' */
+	cmpl $97, %edi   /* Compare with 'a' */
 	jb .NotAlpha      /* Not alpha if above 'Z' and below 'a' */
-	cmpb $'z', %dil   /* Compare with 'z' */
+	cmpl $122, %edi   /* Compare with 'z' */
 	jbe .IsAlpha      /* Is alpha if below or equal to 'z' and above/equal to 'a'  */
+	jmp .NotAlpha
 .IsAlpha:
 	movl $1, %eax     /* Set return value to 1 */ 
 	ret
