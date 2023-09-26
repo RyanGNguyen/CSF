@@ -15,12 +15,12 @@
 
 	.section .rodata
 /* Define any string constants or read-only data here */
-sp:.string " "
-st:.string "\t"
-sr:.string "\r"
-sn:.string "\n"
-sf:.string "\f"
-sv:.string "\v"
+	sp:.string " "
+	st:.string "\t"
+	sr:.string "\r"
+	sn:.string "\n"
+	sf:.string "\f"
+	sv:.string "\v"
 
 	.section .text
 
@@ -63,25 +63,24 @@ wc_hash:
  */
 	.globl wc_str_compare //need to complete this
 wc_str_compare:
-.loop:
-movzbq (%rsi), %r8b         # load byte from lhs into r8
-movzbq (%rdi), %r9b         # load byte from rhs into r9
-cmpb %r9b, %r8b            # compare the two bytes
-jne .not_equal              # if not equal, determined order
-testb %r8b, %r8b            # check if reached the null terminator of lhs
-je .done                    # if yes, strings are equal or lhs is a prefix
-inc %rsi                    # move to next character of lhs
-inc %rdi                    # move to next character of rhs
-jmp .loop
+	.loop:
+	movzwl [%di], %r8d         # load byte from lhs into r8d
+	movzwl [%si], %r9d         # load byte from rhs into r9d
+	cmpl %r9d, %r8d            # compare the two bytes
+	jne .not_equal              # if not equal, determined order
+	testl %r8d, %r8d            # check if reached the null terminator of lhs
+	je .done                    # if yes, strings are equal or lhs is a prefix
+	inc %rdi                    # move to next character of lhs
+	inc %rsi                    # move to next character of rhs
+	jmp .loop
 
-.not_equal:
-subl %r9d, %r8d             # calculate difference
-movl %r8d, %eax             # store difference in eax for return
-ret
+	.not_equal:
+	subl %r9d, %r8d             # calculate difference
+	movl %r8d, %eax             # store difference in eax for return
+	ret
 
-.done:
-xorl %eax, %eax             # strings are identical, return 0
-ret
+	.done:
+	movl $0, %eax            # strings are identical, return 0
 	ret
 
 /*
@@ -113,30 +112,22 @@ wc_str_copy:
  */
 	.globl wc_isspace
 wc_isspace:
-	pushq %rbp 
-	movq %rsp, %rbp
-	subq $16, %rsp 
-
-	cmpb $sp, %dil  /*space*/
-	je .IsSpace
-	cmpb $st, %dil /*t*/
-	je .IsSpace
-	cmpb $sr, %dil /*r*/
-	je .IsSpace
-	cmpb $sn, %dil /*n*/
-	je .IsSpace
-	cmpb $sf, %dil /*f*/
-	je .IsSpace
-	cmpb $sv, %dil /*v*/
-	je .IsSpace
-	movl $0, %eax
-	jmp .SpaceDone
+	cmpl $9, %edi ; Compare with horizontal tab
+	je .IsSpace    ; Jump to Is Space 
+	cmpl $10, %edi ; Compare with new line
+	je .IsSpace    ; Jump to Is Space 
+	cmpl $11, %edi ; Compare with vertical tab
+	je .IsSpace    ; Jump to Is Space 
+	cmpl $12, %edi ; Compare to end of page
+	je .IsSpace    ; Jump to Is Space 
+	cmpl $13, %edi ; Compare with carriage return
+	je .IsSpace    ; Jump to Is Space 
+	cmpl $32, %edi ; Compare with space character
+	je .IsSpace    ; Jump to Is Space 
+	movl $0, %eax  ; Default for non-spaces to return 0
+	ret             
 .IsSpace:
-	movl $1, %eax
-	jmp .SpaceDone
-.SpaceDone:
-	addq $16, %rsp 
-	popq %rbp 
+	movl $1, %eax  ; Return 1 for space 
 	ret
 
 /*
@@ -148,15 +139,21 @@ wc_isspace:
  */
 
 
-	.globl wc_isalpha //need to complete this
+	.globl wc_isalpha
 wc_isalpha:
-	cmpl $65, %edi  
-	jae .IsAlpha
-	/*TODO*/
-	jmp .AlphaDone
+	cmpb $'A', %dil   ; Compare with 'A' 
+	jb .NotAlpha      ; Not alpha if below 'A'
+	cmpb $'Z', %dil   ; Compare with 'Z'
+	jbe .IsAlpha      ; Is alpha since above 'A' and below or equal to 'Z'
+	cmpb $'a', %dil   ; Compare with 'a' 
+	jb .NotAlpha      ; Not alpha if above 'Z' and below 'a'
+	cmpb $'z', %dil   ; Compare with 'z'
+	jbe .IsAlpha      ; Is alpha if below or equal to 'z' and above/equal to 'a' 
 .IsAlpha:
+	movl $1, %eax     ; Set return value to 1
+	ret
 .NotAlpha:
-.AlphaDone:
+	movl $0, %eax     ; Set return value to 0
 	ret
 
 /*
