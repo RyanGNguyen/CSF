@@ -12,6 +12,7 @@
 #define WORDENTRY_WORD_OFFSET   (0)
 #define WORDENTRY_COUNT_OFFSET  (MAX_WORDLEN+1)
 #define WORDENTRY_NEXT_OFFSET   (MAX_WORDLEN+1+4+4)
+#define WORDENTRY_SIZE          (WORDENTRY_NEXT_OFFSET+8)
 
 	.section .rodata
 /* Define any string constants or read-only data here */
@@ -37,7 +38,11 @@
  */
 	.globl wc_hash
 wc_hash:
-	/* TODO: implement */
+	movzlq $5381, %r8
+	movzlq $33, %r9
+.Loop:
+	mulq %r9, %r8
+	/* shlq $5, %r8 */
 	ret
 
 /*
