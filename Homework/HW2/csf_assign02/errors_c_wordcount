@@ -1,0 +1,85 @@
+==853== Memcheck, a memory error detector
+==853== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==853== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==853== Command: ./c_wordcount little_dorrit.txt
+==853== Parent PID: 757
+==853== 
+==853== Conditional jump or move depends on uninitialised value(s)
+==853==    at 0x4015F9: wc_isalpha (c_wcfuncs.c:84)
+==853==    by 0x401743: wc_trim_non_alpha (c_wcfuncs.c:143)
+==853==    by 0x401349: main (c_wcmain.c:54)
+==853== 
+==853== Conditional jump or move depends on uninitialised value(s)
+==853==    at 0x401605: wc_isalpha (c_wcfuncs.c:84)
+==853==    by 0x401743: wc_trim_non_alpha (c_wcfuncs.c:143)
+==853==    by 0x401349: main (c_wcmain.c:54)
+==853== 
+==853== Invalid read of size 1
+==853==    at 0x401547: wc_str_compare (c_wcfuncs.c:43)
+==853==    by 0x4017AE: wc_find_or_insert (c_wcfuncs.c:164)
+==853==    by 0x40189E: wc_dict_find_or_insert (c_wcfuncs.c:192)
+==853==    by 0x401487: process_input_word (c_wcmain.c:86)
+==853==    by 0x401374: main (c_wcmain.c:58)
+==853==  Address 0x50 is not stack'd, malloc'd or (recently) free'd
+==853== 
+==853== 
+==853== Process terminating with default action of signal 11 (SIGSEGV)
+==853==  Access not within mapped region at address 0x50
+==853==    at 0x401547: wc_str_compare (c_wcfuncs.c:43)
+==853==    by 0x4017AE: wc_find_or_insert (c_wcfuncs.c:164)
+==853==    by 0x40189E: wc_dict_find_or_insert (c_wcfuncs.c:192)
+==853==    by 0x401487: process_input_word (c_wcmain.c:86)
+==853==    by 0x401374: main (c_wcmain.c:58)
+==853==  If you believe this happened as a result of a stack
+==853==  overflow in your program's main thread (unlikely but
+==853==  possible), you can try to increase the size of the
+==853==  main thread stack using the --main-stacksize= flag.
+==853==  The main thread stack size used in this run was 8388608.
+==853== 
+==853== HEAP SUMMARY:
+==853==     in use at exit: 43,224 bytes in 530 blocks
+==853==   total heap usage: 530 allocs, 0 frees, 43,224 bytes allocated
+==853== 
+==853== 1,280 bytes in 16 blocks are definitely lost in loss record 3 of 4
+==853==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==853==    by 0x4017DF: wc_find_or_insert (c_wcfuncs.c:170)
+==853==    by 0x40189E: wc_dict_find_or_insert (c_wcfuncs.c:192)
+==853==    by 0x401487: process_input_word (c_wcmain.c:86)
+==853==    by 0x401374: main (c_wcmain.c:58)
+==853== 
+==853== LEAK SUMMARY:
+==853==    definitely lost: 1,280 bytes in 16 blocks
+==853==    indirectly lost: 0 bytes in 0 blocks
+==853==      possibly lost: 0 bytes in 0 blocks
+==853==    still reachable: 41,944 bytes in 514 blocks
+==853==         suppressed: 0 bytes in 0 blocks
+==853== Reachable blocks (those to which a pointer was found) are not shown.
+==853== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==853== 
+==853== Use --track-origins=yes to see where uninitialised values come from
+==853== ERROR SUMMARY: 18 errors from 4 contexts (suppressed: 0 from 0)
+==853== 
+==853== 1 errors in context 1 of 4:
+==853== Invalid read of size 1
+==853==    at 0x401547: wc_str_compare (c_wcfuncs.c:43)
+==853==    by 0x4017AE: wc_find_or_insert (c_wcfuncs.c:164)
+==853==    by 0x40189E: wc_dict_find_or_insert (c_wcfuncs.c:192)
+==853==    by 0x401487: process_input_word (c_wcmain.c:86)
+==853==    by 0x401374: main (c_wcmain.c:58)
+==853==  Address 0x50 is not stack'd, malloc'd or (recently) free'd
+==853== 
+==853== 
+==853== 8 errors in context 2 of 4:
+==853== Conditional jump or move depends on uninitialised value(s)
+==853==    at 0x401605: wc_isalpha (c_wcfuncs.c:84)
+==853==    by 0x401743: wc_trim_non_alpha (c_wcfuncs.c:143)
+==853==    by 0x401349: main (c_wcmain.c:54)
+==853== 
+==853== 
+==853== 8 errors in context 3 of 4:
+==853== Conditional jump or move depends on uninitialised value(s)
+==853==    at 0x4015F9: wc_isalpha (c_wcfuncs.c:84)
+==853==    by 0x401743: wc_trim_non_alpha (c_wcfuncs.c:143)
+==853==    by 0x401349: main (c_wcmain.c:54)
+==853== 
+==853== ERROR SUMMARY: 18 errors from 4 contexts (suppressed: 0 from 0)

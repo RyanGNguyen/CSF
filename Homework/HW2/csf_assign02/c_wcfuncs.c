@@ -22,10 +22,9 @@
 // being unsigned (in the range 0..255)
 uint32_t wc_hash(const unsigned char *w) {
   uint32_t hash_code = 5381; 
-  const unsigned char *c = w; 
-  while (*c != '\0') {
-    hash_code = hash_code * 33 + *c;
-    c++; 
+  while (*w != '\0') {
+    hash_code = hash_code * 33 + *w;
+    w++; 
   }
   return hash_code; 
 }
@@ -50,16 +49,12 @@ int wc_str_compare(const unsigned char *lhs, const unsigned char *rhs) {
 
 // Copy NUL-terminated source string to the destination buffer.
 void wc_str_copy(unsigned char *dest, const unsigned char *source) {
-  unsigned len = 0; 
   while (*source != '\0') {
-    len++; 
-    source++; 
+    *dest = *source; 
+    dest++; 
+    source++;
   }
-  source -= len; 
-  for (unsigned i = 0; i < len; i++) {
-    *(dest + i) = *(source + i); 
-  }
-  *(dest + len) = '\0'; 
+  *dest = '\0';
 }
 
 // Return 1 if the character code in c is a whitespace character,
@@ -74,17 +69,13 @@ void wc_str_copy(unsigned char *dest, const unsigned char *source) {
 //   '\f'
 //   '\v'
 int wc_isspace(unsigned char c) {
-  int ret; 
   switch(c) {
     case ' ': case '\t': case '\r':
     case '\n': case '\f': case '\v':
-      ret = 1; 
-      break; 
+      return 1;
     default: 
-      ret = 0; 
-      break;
+      return 0; 
   }
-  return ret; 
 }
 
 // Return 1 if the character code in c is an alphabetic character
@@ -149,7 +140,7 @@ void wc_trim_non_alpha(unsigned char *w) {
   } do {
     *w = '\0'; 
     w--; 
-  } while (wc_isalpha(*w) != 1); 
+  } while (wc_isalpha(*w) == 0); 
 }
 
 // Search the specified linked list of WordEntry objects for an object
@@ -193,7 +184,7 @@ struct WordEntry *wc_find_or_insert(struct WordEntry *head, const unsigned char 
 // which represents s.
 
 struct WordEntry *wc_dict_find_or_insert(struct WordEntry *buckets[], unsigned num_buckets, const unsigned char *s) {
-  uint32_t hash = wc_hash(s) % num_buckets;
+    uint32_t hash = wc_hash(s) % num_buckets;
     struct WordEntry *entry = buckets[hash];
     int inserted;
 

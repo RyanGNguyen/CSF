@@ -10,11 +10,11 @@
 void process_input_word(struct WordEntry *buckets[], unsigned char *word, uint32_t *unique_words, const unsigned char **best_word, uint32_t *best_word_count);
 
 int main(int argc, char **argv) {
-  // stats (to be printed at end)
-  uint32_t total_words = 0;
-  uint32_t unique_words = 0;
-  const unsigned char *best_word = (const unsigned char *) "";
-  uint32_t best_word_count = 0;
+    // stats (to be printed at end)
+    uint32_t total_words = 0;
+    uint32_t unique_words = 0;
+    const unsigned char *best_word = (const unsigned char *) "";
+    uint32_t best_word_count = 0;
 
     FILE *file;
     file = stdin;
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     // All buckets will start empty
 
     struct WordEntry *buckets[HASHTABLE_SIZE];
-    for (int i = 0; i < HASHTABLE_SIZE; i++) {
+    for (unsigned i = 0; i < HASHTABLE_SIZE; i++) {
         buckets[i] = NULL;
     }
 
@@ -35,13 +35,12 @@ int main(int argc, char **argv) {
         file = fopen(argv[1], "r");
 
         if (file == NULL) {
-            perror("Error opening provided file");
             return 1;
         }
     }
 
     // Hold word that is being processed
-    unsigned char word[MAX_WORDLEN + 1];
+    unsigned char word[MAX_WORDLEN + 1] = {'\0'}; 
 
     // If word read from file, keep iterating
     while (wc_readnext(file, word)) {
@@ -59,20 +58,20 @@ int main(int argc, char **argv) {
         process_input_word(buckets, word, &unique_words, &best_word, &best_word_count);
     }
 
-  printf("Total words read: %u\n", (unsigned int) total_words);
-  printf("Unique words read: %u\n", (unsigned int) unique_words);
-  printf("Most frequent word: %s (%u)\n", (const char *) best_word, best_word_count);
+    printf("Total words read: %u\n", total_words);
+    printf("Unique words read: %u\n", unique_words);
+    printf("Most frequent word: %s (%u)\n", (const char *) best_word, best_word_count);
 
-  // Closes file, freeing memory
+    // Closes file, freeing memory
     if (argc == 2) {
         fclose(file);
     }
-  // Basically going through & freeing all the nodes
-    for (int i = 0; i < HASHTABLE_SIZE; i++) {
+    // Basically going through & freeing all the nodes
+    for (unsigned i = 0; i < HASHTABLE_SIZE; i++) {
         wc_free_chain(buckets[i]);
     }
 
-  return 0;
+    return 0;
 }
 
 // TODO: definitions of helper functions
