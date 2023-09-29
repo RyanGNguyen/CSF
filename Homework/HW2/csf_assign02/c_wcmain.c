@@ -5,7 +5,7 @@
 //test
 
 // Suggested number of buckets for the hash table
-#define HASHTABLE_SIZE 13249
+#define HASHTABLE_SIZE 13000
 
 void process_input_word(struct WordEntry *buckets[], unsigned char *word, uint32_t *unique_words, const unsigned char **best_word, uint32_t *best_word_count);
 
@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
         file = fopen(argv[1], "r");
 
         if (file == NULL) {
+            fprintf(stderr, "File could not be opened.\n"); 
             return 1;
         }
     }
