@@ -38,20 +38,20 @@
  */
 	.globl wc_hash
 wc_hash:
-	movq $5381, %r8          /* Initialize register to hold final hashcode */
-    movq $5381, %r9          /* Preserve a copy of hashcode for future calculations  */  
+	movl $5381, %r8d          /* Initialize register to hold final hashcode */
+    movl $5381, %r9d          /* Preserve a copy of hashcode for future calculations  */  
 	jmp .HashCond            /* Check condition */ 
 .HashLoop:
-	shlq $5, %r8             /* Bit shift left by 5 is equal to multiplying by 32 */  
-	addq %r9, %r8            /* Add initial hashcode to left shifted version to equal multiplying by 33 */ 
-	movzbq (%rdi), %r10      /* Copy over char byte and zero extend it for calculation */
-    addq %r10, %r8           /* Add char value to hashcode */ 
-	movq %r8, %r9            /* Copy new value of hashcode to r9 for future calculation */
+	shll $5, %r8d             /* Bit shift left by 5 is equal to multiplying by 32 */  
+	addl %r9d, %r8d            /* Add initial hashcode to left shifted version to equal multiplying by 33 */ 
+	movzbl (%rdi), %r10d      /* Copy over char byte and zero extend it for calculation */
+    addl %r10d, %r8d           /* Add char value to hashcode */ 
+	movl %r8d, %r9d            /* Copy new value of hashcode to r9d for future calculation */
 	inc %rdi                 /* Advance to next char */ 
 .HashCond:
 	cmpb $0, (%rdi)          /* Check if reached null terminator */ 
 	jne .HashLoop            /* If not, jump back into loop */ 
-	movq %r8, %rax           /* Otherwise, return final hashcode to %rax */ 
+	movl %r8d, %eax           /* Otherwise, return final hashcode to %eax */ 
 	ret
 
 /*
@@ -199,10 +199,17 @@ wc_readnext:
  */
 	.globl wc_tolower
 wc_tolower:
-	movzbl (%rdi), %r8d    /* Copy over byte from word */ 
+	mov (%rdi), %r8b       /* Copy over char byte from word */   
 	jmp .LowCheckCond      /* Check condition */
+.LowLoop:
+    cmpb $65, %r8b   /* Compare with 'A' */
+	jb .____         /*  */
+	cmpb $90, %r8b   /* Compare with 'Z' */
+	ja .___    
+	addb $32, %r8b
 .LowCheckCond
-	cmpb $0, (%r8)         
+	cmpb $0, %r8b         /* Detect if reached null character */
+	jne .LowLoop           /* If not, keep looping */ 
 	ret 
 
 
