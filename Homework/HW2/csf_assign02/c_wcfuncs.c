@@ -157,17 +157,15 @@ void wc_trim_non_alpha(unsigned char *w) {
 // job to update the count.)
 struct WordEntry *wc_find_or_insert(struct WordEntry *head, const unsigned char *s, int *inserted) {
   struct WordEntry *cur = head; 
-  unsigned char sword[MAX_WORDLEN + 1]; 
-  wc_str_copy(sword, s); //Work around const keyword for s 
   while (cur != NULL) {
-    if (wc_str_compare(cur->word, sword) == 0) { //Found word 
+    if (wc_str_compare(cur->word, s) == 0) { //Found word 
       *inserted = 0; 
       return cur; 
     }
     cur = cur->next; 
   }  
-  struct WordEntry *new = malloc(sizeof(*new)); 
-  wc_str_copy(new->word, sword); 
+  struct WordEntry *new = malloc(sizeof(*head)); 
+  wc_str_copy(new->word, s); 
   new->count = 0;
   new->next = head;  
   *inserted = 1;
