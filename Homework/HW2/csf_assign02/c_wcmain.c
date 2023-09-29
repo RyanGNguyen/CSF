@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     }
 
     // Hold word that is being processed
-    unsigned char word[MAX_WORDLEN + 1] = {'\0'}; 
+    unsigned char word[MAX_WORDLEN + 1]; 
 
     // If word read from file, keep iterating
     while (wc_readnext(file, word)) {
