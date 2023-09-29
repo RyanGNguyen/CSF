@@ -7,13 +7,13 @@
 // Suggested number of buckets for the hash table
 #define HASHTABLE_SIZE 13000
 
-void process_input_word(struct WordEntry *buckets[], unsigned char *word, uint32_t *unique_words, const unsigned char **best_word, uint32_t *best_word_count);
+void process_input_word(struct WordEntry *buckets[], unsigned char *word, uint32_t *unique_words, unsigned char **best_word, uint32_t *best_word_count);
 
 int main(int argc, char **argv) {
     // stats (to be printed at end)
     uint32_t total_words = 0;
     uint32_t unique_words = 0;
-    const unsigned char *best_word = (const unsigned char *) "";
+    unsigned char *best_word = (unsigned char *) "";
     uint32_t best_word_count = 0;
 
     FILE *file;
@@ -81,7 +81,7 @@ void process_input_word(
         struct WordEntry *buckets[],
         unsigned char *word,
         uint32_t *unique_words,
-        const unsigned char **best_word,
+        unsigned char **best_word,
         uint32_t *best_word_count
 ) {
     struct WordEntry *entry = wc_dict_find_or_insert(buckets, HASHTABLE_SIZE, word);
