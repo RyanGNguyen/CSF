@@ -72,14 +72,14 @@ wc_hash:
 	.globl wc_str_compare //need to complete this
 wc_str_compare:
 .StrCmpLoop:
-	movzbl (%rdi), %r8d        /* Copies char from lhs and converts into integer in r8d */
-	movzbl (%rsi), %r9d         /* Copies char from rhs and converts into integer in r9d */
+	movzbl (%rsi), %r8d        /* Copies char from lhs and converts into integer in r8d */
+	movzbl (%rdi), %r9d        /* Copies char from rhs and converts into integer in r9d */
 	cmpl %r9d, %r8d            /* compare the two bytes */
 	jne .NotEqual              /* if not equal, determine order */
 	testl %r8d, %r8d           /* check if reached the null terminator of lhs */
 	je .AreEqual               /* if yes, strings are equal or lhs is a prefix */
-	inc %rdi                   /* move to next character of lhs */
-	inc %rsi                   /* move to next character of rhs */
+	inc %rsi                   /* move to next character of lhs */
+	inc %rdi                   /* move to next character of rhs */
 	jmp .StrCmpLoop
 .NotEqual:
 	subl %r9d, %r8d            /* calculate difference */
@@ -97,8 +97,14 @@ wc_str_compare:
  */
 	.globl wc_str_copy
 wc_str_copy:
-	
-	ret
+.StrCpyLoop:
+	movb (%rsi), %al           /* Copies char from source and adds it to buffer register */
+	movb %al, (%rdi)           /* Copies char from buffer register to destination */ 
+	inc %rsi                   /* Increment to next character in source */ 
+	inc %rdi                   /* Increment to next memory location in destination */
+	cmpb $0, (%rsi)            /* Check if source has reached null terminator */ 
+	jne .StrCpyLoop            /* If not, loop again */ 
+ret
 
 /*
  * Return 1 if the character code in c is a whitespace character,
@@ -193,8 +199,12 @@ wc_readnext:
  */
 	.globl wc_tolower
 wc_tolower:
-	/* TODO: implement */
-	ret
+	movzbl (%rdi), %r8d    /* Copy over byte from word */ 
+	jmp .LowCheckCond      /* Check condition */
+.LowCheckCond
+	cmpb $0, (%r8)         
+	ret 
+
 
 /*
  * Remove any non-alphaabetic characters from the end of the
