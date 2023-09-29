@@ -38,11 +38,20 @@
  */
 	.globl wc_hash
 wc_hash:
-	movzlq $5381, %r8
-	movzlq $33, %r9
-.Loop:
-	mulq %r9, %r8
-	/* shlq $5, %r8 */
+	movq $5381, %r8          /* Initialize register to hold final hashcode */
+    movq $5381, %r9          /* Preserve a copy of hashcode for future calculations  */  
+	jmp .HashCond            /* Check condition */ 
+.HashLoop:
+	shlq $5, %r8             /* Bit shift left by 5 is equal to multiplying by 32 */  
+	addq %r9, %r8            /* Add initial hashcode to left shifted version to equal multiplying by 33 */ 
+	movzbq (%rdi), %r10      /* Copy over char byte and zero extend it for calculation */
+    addq %r10, %r8           /* Add char value to hashcode */ 
+	movq %r8, %r9            /* Copy new value of hashcode to r9 for future calculation */
+	inc %rdi                 /* Advance to next char */ 
+.HashCond:
+	cmpb $0, (%rdi)          /* Check if reached null terminator */ 
+	jne .HashLoop            /* If not, jump back into loop */ 
+	movq %r8, %rax           /* Otherwise, return final hashcode to %rax */ 
 	ret
 
 /*
@@ -62,7 +71,7 @@ wc_hash:
  */
 	.globl wc_str_compare //need to complete this
 wc_str_compare:
-	.Loop:
+.StrCmpLoop:
 	movzbl (%rdi), %r8d        /* Copies char from lhs and converts into integer in r8d */
 	movzbl (%rsi), %r9d         /* Copies char from rhs and converts into integer in r9d */
 	cmpl %r9d, %r8d            /* compare the two bytes */
@@ -71,7 +80,7 @@ wc_str_compare:
 	je .AreEqual               /* if yes, strings are equal or lhs is a prefix */
 	inc %rdi                   /* move to next character of lhs */
 	inc %rsi                   /* move to next character of rhs */
-	jmp .Loop
+	jmp .StrCmpLoop
 .NotEqual:
 	subl %r9d, %r8d            /* calculate difference */
 	movl %r8d, %eax            /* store difference in eax for return */
@@ -88,7 +97,7 @@ wc_str_compare:
  */
 	.globl wc_str_copy
 wc_str_copy:
-	/* TODO: implement */
+	
 	ret
 
 /*
