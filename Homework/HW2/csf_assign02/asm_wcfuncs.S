@@ -72,14 +72,14 @@ wc_hash:
 	.globl wc_str_compare //need to complete this
 wc_str_compare:
 .StrCmpLoop:
-	movzbl (%rsi), %r8d        /* Copies char from lhs and converts into integer in r8d */
-	movzbl (%rdi), %r9d        /* Copies char from rhs and converts into integer in r9d */
+	movzbl (%rdi), %r8d        /* Copies char from lhs and converts into integer in r8d */
+	movzbl (%rsi), %r9d        /* Copies char from rhs and converts into integer in r9d */
 	cmpl %r9d, %r8d            /* compare the two bytes */
 	jne .NotEqual              /* if not equal, determine order */
 	testl %r8d, %r8d           /* check if reached the null terminator of lhs */
 	je .AreEqual               /* if yes, strings are equal or lhs is a prefix */
-	inc %rsi                   /* move to next character of lhs */
-	inc %rdi                   /* move to next character of rhs */
+	inc %rdi                   /* move to next character of lhs */
+	inc %rsi                   /* move to next character of rhs */
 	jmp .StrCmpLoop
 .NotEqual:
 	subl %r9d, %r8d            /* calculate difference */
@@ -98,8 +98,8 @@ wc_str_compare:
 	.globl wc_str_copy
 wc_str_copy:
 .StrCpyLoop:
-	movb (%rsi), %al           /* Copies char from source and adds it to buffer register */
-	movb %al, (%rdi)           /* Copies char from buffer register to destination */ 
+	movb (%rsi), %r8b           /* Copies char from source and adds it to buffer register */
+	movb %r8b, (%rdi)           /* Copies char from buffer register to destination */ 
 	inc %rsi                   /* Increment to next character in source */ 
 	inc %rdi                   /* Increment to next memory location in destination */
 	cmpb $0, (%rsi)            /* Check if source has reached null terminator */ 
