@@ -199,17 +199,24 @@ wc_readnext:
  */
 	.globl wc_tolower
 wc_tolower:
-	mov (%rdi), %r8b       /* Copy over char byte from word */   
-	jmp .LowCheckCond      /* Check condition */
+	subq $8, %rsp          /* Align stack */
 .LowLoop:
-    cmpb $65, %r8b   /* Compare with 'A' */
-	jb .____         /*  */
-	cmpb $90, %r8b   /* Compare with 'Z' */
-	ja .___    
-	addb $32, %r8b
-.LowCheckCond
-	cmpb $0, %r8b         /* Detect if reached null character */
-	jne .LowLoop           /* If not, keep looping */ 
+	movb (%rdi), %r10b     /* Copy over char byte from word */  
+	cmpb $0, %r10b         /* Detect if reached null character */
+	je .LowDone            /* End loop if detect null character */
+
+    cmpb $65, %r10b   /* Compare with 'A' */
+	jb .LowNext       /* Skip if not within uppercase range */
+	cmpb $90, %r10b   /* Compare with 'Z' */
+	ja .LowNext       /* Skip if not within uppercase range */   
+
+	addb $32, %r10b     /* Convert uppercase to lowercase */ 
+	movb %r10b, (%rdi)  /* Assign converted character to previous memory location */ 
+.LowNext:
+	incq %rdi           /* Advance pointer to next character */
+	jmp .LowLoop        /* Re enter loop */ 
+.LowDone:
+	addq $8, %rsp          /* Dealign stack */ 
 	ret 
 
 
