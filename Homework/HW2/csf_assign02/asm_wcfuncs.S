@@ -1,7 +1,6 @@
 /*
  * Assembly language function implementations
  */
- //test
 
 #define MAX_WORDLEN 63
 
