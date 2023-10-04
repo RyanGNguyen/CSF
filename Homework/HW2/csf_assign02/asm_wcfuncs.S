@@ -229,7 +229,7 @@ pushq   %rbp
     jmp     .Lend            /* EOF then end */
 
 .Lwhitespace:
-    cmpl    $0, -4(%rbp)     /* compare i with 0
+    cmpl    $0, -4(%rbp)     /* compare i with 0 */
     jne     .LwordEnd
     /* If whitespace and i == 0, fetch next character */
     call    fgetc@PLT        /* else, read next char */
@@ -311,10 +311,34 @@ wc_tolower:
  * C function prototype:
  *    void wc_trim_non_alpha(unsigned char *w);
  */
-	.globl wc_trim_non_alpha
+.globl wc_trim_non_alpha
 wc_trim_non_alpha:
-	/* TODO: implement */
-	ret
+pushq   %rbp
+    movq    %rsp, %rbp
+
+    movq    %rdi, %rax      /* Load pointer w into %rax */
+
+    /* Move to end of string */
+.Lfind_end:
+    movb    (%rax), %dl     /* Load byte at pointer into %dl */
+    testb   %dl, %dl        /* Test if byte is zero */
+    je      .Lstart_trim    /* If zero, start trimming */
+    incq    %rax            /* Else, move to next char */
+    jmp     .Lfind_end      /* Loop to find end */
+
+.Lstart_trim:
+    decq    %rax            /* move one char back */
+    movb    (%rax), %dl     /* Load byte at pointer into %dl */
+    movzbl  %dl, %edi       /* Move byte into %edi for wc_isalpha call */
+    call    wc_isalpha      /* Check if char is alphabetic */
+    testl   %eax, %eax      /* Test return value */
+    jne     .Lexit          /* If non-zero, exit */
+    movb    $0, (%rax)      /* Else, set char to zero */
+    jmp     .Lstart_trim    /* Loop to trim next char */
+
+.Lexit:
+    leave
+    ret
 
 /*
  * Search the specified linked list of WordEntry objects for an object
