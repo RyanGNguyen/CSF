@@ -187,7 +187,71 @@ wc_isalpha:
  */
 	.globl wc_readnext
 wc_readnext:
-	/* TODO: implement */
+pushq   %rbp
+    movq    %rsp, %rbp
+    pushq   %r12
+    pushq   %rbx
+    pushq   %r13
+    subq    $32, %rsp
+
+    movq    %rdi, -24(%rbp)  /* FILE* in */
+    movq    %rsi, -32(%rbp)  /* char* w */
+    movl    $0, -4(%rbp)     /* int i */
+
+    jmp     .LcheckEOF
+
+.Lloop:
+    /* Check if character is a whitespace */
+    movzbl  -5(%rbp), %edi   /* Load current char into %edi */
+    call    wc_isspace
+    testl   %eax, %eax
+    jne     .Lwhitespace
+    /* If not whitespace, process character */
+    movl    -4(%rbp), %eax   /* Load i */
+    cmpq    $63, %rax        /* Compare with MAX_WORDLEN */
+    jae     .LskipChar       /* If >= MAX_WORDLEN, skip char */
+    movl    -4(%rbp), %edx
+    movq    -32(%rbp), %rax
+    addq    %rdx, %rax
+    movzbl  -5(%rbp), %edx
+    movb    %dl, (%rax)
+    addl    $1, -4(%rbp)
+
+.LskipChar:
+    call    fgetc@PLT
+    movb    %al, -5(%rbp)
+
+.LcheckEOF:
+    cmpb    $-1, -5(%rbp)
+    jne     .Lloop
+    jmp     .Lend
+
+.Lwhitespace:
+    cmpl    $0, -4(%rbp)
+    jne     .LwordEnd
+    /* If whitespace and i == 0, fetch next character */
+    call    fgetc@PLT
+    movb    %al, -5(%rbp)
+    jmp     .LcheckEOF
+
+.LwordEnd:
+    movl    -4(%rbp), %edx
+    movq    -32(%rbp), %rax
+    addq    %rdx, %rax
+    movb    $0, (%rax)
+    movl    $1, %eax
+    jmp     .Lexit
+
+.Lend:
+    /* End of file reached */
+    movl    $0, %eax
+
+.Lexit:
+    addq    $32, %rsp
+    popq    %r13
+    popq    %rbx
+    popq    %r12
+    leave
 	ret
 
 /*
