@@ -257,7 +257,7 @@ pushq   %rbp
 	ret                      /* pops return address off stack */
 
 /*
- * 20 line version of the above assembly code
+ * 20 line version of the above assembly code (not needed)
  * .globl wc_readnext
  * wc_readnext:
  * pushq %rbp; pushq %r12; pushq %rbx; pushq %r13; subq $32, %rsp
@@ -311,6 +311,7 @@ wc_tolower:
  * C function prototype:
  *    void wc_trim_non_alpha(unsigned char *w);
  */
+
 .globl wc_trim_non_alpha
 wc_trim_non_alpha:
 pushq   %rbp
@@ -357,9 +358,55 @@ pushq   %rbp
  * C function prototype:
  *    struct WordEntry *wc_find_or_insert(struct WordEntry *head, const unsigned char *s, int *inserted);
  */
-	.globl wc_find_or_insert
+
+.globl wc_find_or_insert
 wc_find_or_insert:
-	/* TODO: implement */
+pushq   %rbp                   /* Saves old base pointer */
+    movq    %rsp, %rbp         /* Updates base pointer */
+
+    pushq   %rbx               /* Saves callee-saved registers */
+    pushq   %r12
+    pushq   %r13
+
+    movq    %rdi, %rbx         /* Moves head pointer to %rbx */
+    movq    %rsi, %r12         /* Moves string pointer to %r12 */
+    movq    %rdx, %r13         /* Moves inserted pointer to %r13 */
+
+.loop_check_word:
+    testq   %rbx, %rbx         /* Check if current node is NULL */
+    je      .allocate_new      /* If yes, jump to allocate new node */
+
+    movq    (%rbx), %rdi       /* Load current node's word to %rdi */
+    call    wc_str_compare     /* Compares strings */
+    testl   %eax, %eax         /* Checks result of wc_str_compare */
+    je      .word_found        /* If result is 0, jump */
+
+    movq    16(%rbx), %rbx     /* Load next node into %rbx */
+    jmp     .loop_check_word   /* jump back to loop start */
+
+.word_found:
+    movl    $0, (%r13)         /* Sets inserted to 0 */
+    jmp     .exit              /* jump to function exit */
+
+.allocate_new:
+    movq    $sizeof_WordEntry, %rdi    /* Load sizeof(WordEntry) to %rdi */
+    call    malloc                      /* Call malloc */
+    testq   %rax, %rax                  /* Check if malloc returned NULL */
+    je      .exit                       /* If yes jump to exit */
+
+    movq    %rax, %rbx                  /* Moves newly allocated memory pointer to %rbx */
+    movq    %r12, (%rbx)                /* Copys string to new node */
+    movl    $0, 8(%rbx)                 /* Sets count to 0 */
+    movq    %rdi, 16(%rbx)              /* Sets next to old head */
+    movl    $1, (%r13)                  /* Sets inserted to 1 */
+
+.exit:
+    movq    %rbx, %rax          /* Return the node in %rax */
+
+    popq    %r13                /* Restores callee-saved registers */
+    popq    %r12
+    popq    %rbx
+    popq    %rbp                /* Restorss the old base pointer */
 	ret
 
 /*
@@ -374,10 +421,57 @@ wc_find_or_insert:
  * C function prototype:
  *    struct WordEntry *wc_dict_find_or_insert(struct WordEntry *buckets[], unsigned num_buckets, const unsigned char *s);
  */
-	.globl wc_dict_find_or_insert
+
+.globl wc_dict_find_or_insert
 wc_dict_find_or_insert:
-	/* TODO: implement */
-	ret
+pushq   %rbp                  /* Saves the old base pointer */
+    movq    %rsp, %rbp         /* Updates the base pointer */
+
+    pushq   %rbx               /* Saves callee-saved registers */
+    pushq   %r12
+    pushq   %r13
+    pushq   %r14
+
+    movq    %rdi, %rbx         /* Moves buckets[] pointer to %rbx */
+    movl    %esi, %r12d        /* Moves num_buckets to %r12d */
+    movq    %rdx, %r13         /* Moves string pointer to %r13 */
+
+    /* Calculate hash value */
+    movq    %r13, %rdi         /* Moves string to %rdi for wc_hash */
+    call    wc_hash            /* Calls hash function */
+    movl    %eax, %r14d        /* Moves hash result to %r14d */
+
+    /* Perform modulo operation */
+    movl    %r14d, %eax        /* Copys hash result to %eax for division */
+    xorq    %rdx, %rdx         /* Clears previous remainder */
+    divl    %r12d              /* Divides by num_buckets */
+
+    /* Load the appropriate bucket based on the hash */
+    movslq  %eax, %rax         /* Sign extend result to 64-bits */
+    shlq    $3, %rax           /* Multiply by sizeof(pointer) to get offset */
+    addq    %rbx, %rax         /* Add the base address of buckets[] */
+    movq    (%rax), %r14       /* Load bucket into %r14 */
+
+    /* Call wc_find_or_insert function */
+    movq    %r14, %rdi         /* Sets head as first parameter */
+    movq    %r13, %rsi         /* Sets string as second parameter */
+    leaq    -4(%rbp), %rdx     /* Address for 'inserted' local variable */
+    call    wc_find_or_insert
+
+    /* Check if a new entry was inserted */
+    cmpl    $0, -4(%rbp)       /* Compares inserted with 0 */
+    je      .exit              /* If it's not inserted jump to exit */
+
+    /* Update the bucket to point to the new head of the list */
+    movq    %rax, (%rbx)
+
+.exit:
+    popq    %r14               /* Restores callee-saved registers */
+    popq    %r13
+    popq    %r12
+    popq    %rbx
+    popq    %rbp               /* Restores old base pointer */
+    ret
 
 /*
  * Free all of the nodes in given linked list of WordEntry objects.
