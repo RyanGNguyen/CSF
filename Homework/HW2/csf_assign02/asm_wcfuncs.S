@@ -188,71 +188,91 @@ wc_isalpha:
 	.globl wc_readnext
 wc_readnext:
 pushq   %rbp
-    movq    %rsp, %rbp
-    pushq   %r12
-    pushq   %rbx
-    pushq   %r13
-    subq    $32, %rsp
+    movq    %rsp, %rbp       /* Sets new base pointer */
+    pushq   %r12             /* Save r12 register */
+    pushq   %rbx             /* Save rbx register */
+    pushq   %r13             /* save r13 register */
+    subq    $32, %rsp        /* Allocates space on stack */
 
     movq    %rdi, -24(%rbp)  /* FILE* in */
     movq    %rsi, -32(%rbp)  /* char* w */
-    movl    $0, -4(%rbp)     /* int i */
+    movl    $0, -4(%rbp)     /* int counter i to 0 */
 
-    jmp     .LcheckEOF
+    jmp     .LcheckEOF       /* jump to EOF CHECK */
 
 .Lloop:
     /* Check if character is a whitespace */
     movzbl  -5(%rbp), %edi   /* Load current char into %edi */
-    call    wc_isspace
-    testl   %eax, %eax
-    jne     .Lwhitespace
+    call    wc_isspace       /* uses the wc_isspace function */
+    testl   %eax, %eax       /* used if result is non-zero */
+    jne     .Lwhitespace     /* jump if there's white space */
     /* If not whitespace, process character */
     movl    -4(%rbp), %eax   /* Load i */
     cmpq    $63, %rax        /* Compare with MAX_WORDLEN */
     jae     .LskipChar       /* If >= MAX_WORDLEN, skip char */
-    movl    -4(%rbp), %edx
-    movq    -32(%rbp), %rax
-    addq    %rdx, %rax
-    movzbl  -5(%rbp), %edx
-    movb    %dl, (%rax)
-    addl    $1, -4(%rbp)
+    movl    -4(%rbp), %edx   /* loads counter i to edx */
+    movq    -32(%rbp), %rax  /* loads char* w */
+    addq    %rdx, %rax       /* pointer w moved by 1 */
+    movzbl  -5(%rbp), %edx   /* current char into %edx */
+    movb    %dl, (%rax)      /* stores char in word array */
+    addl    $1, -4(%rbp)     /* icnrements by i */
 
 .LskipChar:
-    call    fgetc@PLT
-    movb    %al, -5(%rbp)
+/* goes into stream, fetches next char */
+    call    fgetc@PLT        /* reads next char */
+    movb    %al, -5(%rbp)    /* store read char in local */
 
 .LcheckEOF:
-    cmpb    $-1, -5(%rbp)
-    jne     .Lloop
-    jmp     .Lend
+/* checks if char being read is EOF */
+    cmpb    $-1, -5(%rbp)    /* Compares char with EOF */
+    jne     .Lloop           /* not EOF, so keep reading */
+    jmp     .Lend            /* EOF then end */
 
 .Lwhitespace:
-    cmpl    $0, -4(%rbp)
+    cmpl    $0, -4(%rbp)     /* compare i with 0
     jne     .LwordEnd
     /* If whitespace and i == 0, fetch next character */
-    call    fgetc@PLT
-    movb    %al, -5(%rbp)
-    jmp     .LcheckEOF
+    call    fgetc@PLT        /* else, read next char */
+    movb    %al, -5(%rbp)    /* store read char in local variable */
+    jmp     .LcheckEOF       /* checks if fetched char is EOF */
 
 .LwordEnd:
-    movl    -4(%rbp), %edx
-    movq    -32(%rbp), %rax
-    addq    %rdx, %rax
-    movb    $0, (%rax)
-    movl    $1, %eax
-    jmp     .Lexit
+    movl    -4(%rbp), %edx   /* i loaded into %edx */
+    movq    -32(%rbp), %rax  /* load w into %rax */
+    addq    %rdx, %rax       /* increment address by i */
+    movb    $0, (%rax)       /* null term string */
+    movl    $1, %eax         /* set return value to 1 */
+    jmp     .Lexit           /* go to function exit */
 
 .Lend:
     /* End of file reached */
-    movl    $0, %eax
+    movl    $0, %eax         /* set return to 0 */
 
 .Lexit:
-    addq    $32, %rsp
-    popq    %r13
-    popq    %rbx
-    popq    %r12
+    addq    $32, %rsp        /* deallocate local variable space */
+    popq    %r13             /* restore saved register */
+    popq    %rbx             /* restore saved register */
+    popq    %r12             /* restore saved register */
     leave
-	ret
+	ret                      /* pops return address off stack */
+
+/*
+ * 20 line version of the above assembly code
+ * .globl wc_readnext
+ * wc_readnext:
+ * pushq %rbp; pushq %r12; pushq %rbx; pushq %r13; subq $32, %rsp
+ * movq %rdi, -24(%rbp); movq %rsi, -32(%rbp); movl $0, -4(%rbp)
+ * .Lloop:
+ * call fgetc@PLT; movb %al, -5(%rbp); cmpb $-1, -5(%rbp); je .Lend
+ * movzbl -5(%rbp), %edi; call wc_isspace; testl %eax, %eax; jne .Lwhitespace
+ * movl -4(%rbp), %eax; cmpq $63, %rax; jae .Lloop
+ * addb %al, -32(%rbp, %rax); addl $1, -4(%rbp); jmp .Lloop
+ * .Lwhitespace:
+ *  cmpl $0, -4(%rbp); je .Lloop; xorl %eax, %eax; inc %eax; ret
+ * .Lend:
+ * xorl %eax, %eax; ret
+ *
+ */
 
 /*
  * Convert the NUL-terminated character string in the array
