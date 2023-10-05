@@ -102,7 +102,7 @@ int wc_isalpha(unsigned char c) {
 int wc_readnext(FILE *in, unsigned char *w) {
   unsigned i = 0;
   char c = fgetc(in); 
-  while (c != EOF) {
+  while (c != EOF && i < MAX_WORDLEN) {     //Check for word size 
     if (wc_isspace(c)) {
       if (i != 0) {
         w[i] = '\0';       // End word for space character and read more than 1 char

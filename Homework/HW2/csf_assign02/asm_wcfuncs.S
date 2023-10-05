@@ -387,13 +387,13 @@ wc_find_or_insert:
 
 .word_found:
     movl    $0, (%r13)         /* Sets inserted to 0 */
-    jmp     .exit              /* jump to function exit */
+    jmp     .foi_exit              /* jump to function exit */
 
 .allocate_new:
     movq    $sizeof_WordEntry, %rdi    /* Load sizeof(WordEntry) to %rdi */    /* WORDENTRY_WORD_OFFSET */ 
     call    malloc                      /* Call malloc */
     testq   %rax, %rax                  /* Check if malloc returned NULL */
-    je      .exit                       /* If yes jump to exit */
+    je      .foi_exit                       /* If yes jump to exit */
 
     movq    %rax, %rbx                  /* Moves newly allocated memory pointer to %rbx */
     movq    %r12, (%rbx)                /* Copys string to new node */
@@ -401,7 +401,7 @@ wc_find_or_insert:
     movq    %rdi, 16(%rbx)              /* Sets next to old head */
     movl    $1, (%r13)                  /* Sets inserted to 1 */
 
-.exit:
+.foi_exit:
     movq    %rbx, %rax          /* Return the node in %rax */
 
     popq    %r13                /* Restores callee-saved registers */

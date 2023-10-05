@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "wcfuncs.h"
 
 //test
 
 // Suggested number of buckets for the hash table
-#define HASHTABLE_SIZE 13000
+#define HASHTABLE_SIZE 5000
 
 void process_input_word(struct WordEntry *buckets[], unsigned char *word, uint32_t *unique_words, unsigned char **best_word, uint32_t *best_word_count);
 
@@ -24,9 +25,10 @@ int main(int argc, char **argv) {
     // Bucket points to list of words (hashed same value)
     // All buckets will start empty
 
-    struct WordEntry *buckets[HASHTABLE_SIZE];
+    struct WordEntry *buckets[HASHTABLE_SIZE];  
+
     for (unsigned i = 0; i < HASHTABLE_SIZE; i++) {
-        buckets[i] = NULL;
+        buckets[i] = NULL; 
     }
 
     // Opens file for reading, can't use "read"
@@ -70,7 +72,7 @@ int main(int argc, char **argv) {
     // Basically going through & freeing all the nodes
     for (unsigned i = 0; i < HASHTABLE_SIZE; i++) {
         wc_free_chain(buckets[i]);
-    }
+    } 
 
     return 0;
 }
