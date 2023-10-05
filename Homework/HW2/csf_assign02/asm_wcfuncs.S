@@ -187,7 +187,7 @@ wc_isalpha:
  */
 	.globl wc_readnext
 wc_readnext:
-pushq   %rbp
+    pushq   %rbp
     movq    %rsp, %rbp       /* Sets new base pointer */
     pushq   %r12             /* Save r12 register */
     pushq   %rbx             /* Save rbx register */
@@ -253,7 +253,8 @@ pushq   %rbp
     popq    %r13             /* restore saved register */
     popq    %rbx             /* restore saved register */
     popq    %r12             /* restore saved register */
-    leave
+    movq %rbp, %rsp         
+    popq %rbp 
 	ret                      /* pops return address off stack */
 
 /*
@@ -314,10 +315,10 @@ wc_tolower:
 
 .globl wc_trim_non_alpha
 wc_trim_non_alpha:
-pushq   %rbp
-    movq    %rsp, %rbp
-
+    pushq   %rbp            /* why? */ 
+    movq    %rsp, %rbp      /* why? */ 
     movq    %rdi, %rax      /* Load pointer w into %rax */
+
 
     /* Move to end of string */
 .Lfind_end:
@@ -361,7 +362,7 @@ pushq   %rbp
 
 .globl wc_find_or_insert
 wc_find_or_insert:
-pushq   %rbp                   /* Saves old base pointer */
+    pushq   %rbp                   /* Saves old base pointer */
     movq    %rsp, %rbp         /* Updates base pointer */
 
     pushq   %rbx               /* Saves callee-saved registers */
@@ -381,15 +382,15 @@ pushq   %rbp                   /* Saves old base pointer */
     testl   %eax, %eax         /* Checks result of wc_str_compare */
     je      .word_found        /* If result is 0, jump */
 
-    movq    16(%rbx), %rbx     /* Load next node into %rbx */
-    jmp     .loop_check_word   /* jump back to loop start */
+    movq    16(%rbx), %rbx     /* Load next node into %rbx */   /*WORDENTRY_NEXT_OFFSET? */ 
+    jmp     .loop_check_word   /* jump back to loop start */ 
 
 .word_found:
     movl    $0, (%r13)         /* Sets inserted to 0 */
     jmp     .exit              /* jump to function exit */
 
 .allocate_new:
-    movq    $sizeof_WordEntry, %rdi    /* Load sizeof(WordEntry) to %rdi */
+    movq    $sizeof_WordEntry, %rdi    /* Load sizeof(WordEntry) to %rdi */    /* WORDENTRY_WORD_OFFSET */ 
     call    malloc                      /* Call malloc */
     testq   %rax, %rax                  /* Check if malloc returned NULL */
     je      .exit                       /* If yes jump to exit */
