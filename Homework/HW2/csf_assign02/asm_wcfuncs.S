@@ -242,13 +242,13 @@ wc_readnext:
     addq    %rdx, %rax       /* increment address by i */
     movb    $0, (%rax)       /* null term string */
     movl    $1, %eax         /* set return value to 1 */
-    jmp     .Lexit           /* go to function exit */
+    jmp     .readnext_exit           /* go to function exit */
 
 .Lend:
     /* End of file reached */
     movl    $0, %eax         /* set return to 0 */
 
-.Lexit:
+.readnext_exit:
     addq    $32, %rsp        /* deallocate local variable space */
     popq    %r13             /* restore saved register */
     popq    %rbx             /* restore saved register */
