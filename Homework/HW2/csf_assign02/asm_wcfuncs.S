@@ -185,6 +185,7 @@ wc_isalpha:
  * C function prototype:
  *    int wc_readnext(FILE *in, unsigned char *w);
  */
+
 	.globl wc_readnext
 wc_readnext:
     pushq   %rbp

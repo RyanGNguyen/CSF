@@ -98,7 +98,8 @@ int wc_isalpha(unsigned char c) {
 //
 // If a sequence of non-whitespace characters has more than
 // MAX_WORDLEN characters, then only the first MAX_WORDLEN
-// characters in the sequence should be stored in the array.
+// characters in the sequence should be stored in the array
+
 int wc_readnext(FILE *in, unsigned char *w) {
   unsigned i = 0;
   char c = fgetc(in); 
