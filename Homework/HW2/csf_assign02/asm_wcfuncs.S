@@ -72,18 +72,18 @@ wc_hash:
 	.globl wc_str_compare //need to complete this
 wc_str_compare:
 .StrCmpLoop:
-	movzbl (%rdi), %r8d        /* Copies char from lhs and converts into integer in r8d */
-	movzbl (%rsi), %r9d        /* Copies char from rhs and converts into integer in r9d */
-	cmpl %r9d, %r8d            /* compare the two bytes */
+	movzbl (%rdi), %r10d        /* Copies char from lhs and converts into integer in r10d */
+	movzbl (%rsi), %r11d        /* Copies char from rhs and converts into integer in r11d */
+	cmpl %r11d, %r10d            /* compare the two bytes */
 	jne .NotEqual              /* if not equal, determine order */
-	testl %r8d, %r8d           /* check if reached the null terminator of lhs */
+	testl %r10d, %r10d           /* check if reached the null terminator of lhs */
 	je .AreEqual               /* if yes, strings are equal or lhs is a prefix */
 	inc %rdi                   /* move to next character of lhs */
 	inc %rsi                   /* move to next character of rhs */
 	jmp .StrCmpLoop
 .NotEqual:
-	subl %r9d, %r8d            /* calculate difference */
-	movl %r8d, %eax            /* store difference in eax for return */
+	subl %r11d, %r10d            /* calculate difference */
+	movl %r10d, %eax            /* store difference in eax for return */
 	ret
 .AreEqual:
 	movl $0, %eax              /* strings are identical, return 0 */
@@ -98,8 +98,8 @@ wc_str_compare:
 	.globl wc_str_copy
 wc_str_copy:
 .StrCpyLoop:
-	movb (%rsi), %r8b           /* Copies char from source and adds it to buffer register */
-	movb %r8b, (%rdi)           /* Copies char from buffer register to destination */ 
+	movb (%rsi), %r10b           /* Copies char from source and adds it to buffer register */
+	movb %r10b, (%rdi)           /* Copies char from buffer register to destination */ 
 	inc %rsi                   /* Increment to next character in source */ 
 	inc %rdi                   /* Increment to next memory location in destination */
 	cmpb $0, (%rsi)            /* Check if source has reached null terminator */ 
@@ -363,52 +363,54 @@ wc_trim_non_alpha:
 
 .globl wc_find_or_insert
 wc_find_or_insert:
-    pushq   %rbp                   /* Saves old base pointer */
+    pushq   %rbp               /* Saves old base pointer */
     movq    %rsp, %rbp         /* Updates base pointer */
+    subq    $32, %rsp          /* Allocate stack space */ 
 
-    pushq   %rbx               /* Saves callee-saved registers */
-    pushq   %r12
-    pushq   %r13
-
-    movq    %rdi, %rbx         /* Moves head pointer to %rbx */
-    movq    %rsi, %r12         /* Moves string pointer to %r12 */
-    movq    %rdx, %r13         /* Moves inserted pointer to %r13 */
+    movq    %rdi, -8(%rbp)         /* Moves head pointer to stack */
+    movq    %rsi, -16(%rbp)        /* Moves string pointer to stack */
+    movq    %rdx, -24(%rbp)        /* Moves inserted pointer to stack */
 
 .loop_check_word:
-    testq   %rbx, %rbx         /* Check if current node is NULL */
+    movq    -8(%rbp), %r8      /* Copy head pointer to buffer register */  
+    testq   %r8, %r8           /* Check if current node is NULL */
     je      .allocate_new      /* If yes, jump to allocate new node */
 
-    movq    (%rbx), %rdi       /* Load current node's word to %rdi */
+    movq    %r8, %rdi          /* Load current node's word to %rdi */
+    movq    -16(%rbp), %rsi    /* Pass search word back to %rsi */ 
     call    wc_str_compare     /* Compares strings */
     testl   %eax, %eax         /* Checks result of wc_str_compare */
     je      .word_found        /* If result is 0, jump */
 
-    movq    16(%rbx), %rbx     /* Load next node into %rbx */   /*WORDENTRY_NEXT_OFFSET? */ 
-    jmp     .loop_check_word   /* jump back to loop start */ 
+    movq    WORDENTRY_NEXT_OFFSET(%r8), %r8              /* Load next node into %r8 */    
+    jmp     .loop_check_word                             /* jump back to loop start */ 
 
 .word_found:
-    movl    $0, (%r13)         /* Sets inserted to 0 */
-    jmp     .foi_exit              /* jump to function exit */
+    movq    %r8, %r10          /* Moves WordEntry pointer to %r10 */ 
+    movq    -24(%rbp), %r9     /* Gets pointer to inserted */ 
+    movl    $0, (%r9)         /* Sets inserted to 0 */
+    jmp     .foi_exit          /* jump to function exit */
 
 .allocate_new:
     movq    $80, %rdi                   /* Load sizeof(WordEntry) to %rdi */     
     call    malloc                      /* Call malloc */
     testq   %rax, %rax                  /* Check if malloc returned NULL */
-    je      .foi_exit                       /* If yes jump to exit */
+    je      .foi_exit                   /* If yes jump to exit */
 
-    movq    %rax, %rbx                  /* Moves newly allocated memory pointer to %rbx */
-    movq    %r12, (%rbx)                /* Copys string to new node */
-    movl    $0, 8(%rbx)                 /* Sets count to 0 */
-    movq    %rdi, 16(%rbx)              /* Sets next to old head */
-    movl    $1, (%r13)                  /* Sets inserted to 1 */
+    movq    %rax, %rdi                  /* Moves newly allocated memory pointer to %rdi */
+    movq    -16(%rbp), %rsi            /* Copy over string to buffer register */
+    call wc_str_copy
+    movq    %rdi, %r10                 /* move struct to buffer register */ 
+    movl    $0, WORDENTRY_COUNT_OFFSET(%r10)                 /* Sets count to 0 */
+    movq    %r8, WORDENTRY_NEXT_OFFSET(%r10)                /* Sets next to old head */
+    movq    -24(%rbp), %r9                        /* Gets pointer to inserted */
+    movl    $1, (%r9)                             /* Sets inserted to 1 */
 
 .foi_exit:
-    movq    %rbx, %rax          /* Return the node in %rax */
-
-    popq    %r13                /* Restores callee-saved registers */
-    popq    %r12
-    popq    %rbx
-    popq    %rbp                /* Restorss the old base pointer */
+    movq    %r10, %rax         /* return struct entry pointer */ 
+    addq    $32,  %rsp               
+    movq    %rbp, %rsp           
+    popq    %rbp                /* Restores the old base pointer */
 	ret
 
 /*
