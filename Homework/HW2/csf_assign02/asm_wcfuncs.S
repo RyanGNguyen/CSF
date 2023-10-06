@@ -475,10 +475,9 @@ wc_free_chain:
     movq %r8, %r9              /* Hold current value of node in buffer register */ 
     movq   WORDENTRY_NEXT_OFFSET(%r8), %r8              /* Load next node into %r8 */    
     movq   %r9, %rdi 
-    call   free
     jmp .FreeLoop                             /* jump back to loop start */ 
     
-.FreeChainDone
+.FreeChainDone:
     addq $8, %rsp 
 	ret
 
