@@ -246,7 +246,7 @@ wc_readnext:
 
 .Lend:
     /* End of file reached */
-    movl    $0, %eax         /* set return to 0 */
+    movl    $0, %eax         /* set return to 0 */ 
 
 .readnext_exit:
     addq    $32, %rsp        /* deallocate local variable space */
@@ -390,7 +390,7 @@ wc_find_or_insert:
     jmp     .foi_exit              /* jump to function exit */
 
 .allocate_new:
-    movq    $sizeof_WordEntry, %rdi    /* Load sizeof(WordEntry) to %rdi */    /* WORDENTRY_WORD_OFFSET */ 
+    movq    $80, %rdi                   /* Load sizeof(WordEntry) to %rdi */     
     call    malloc                      /* Call malloc */
     testq   %rax, %rax                  /* Check if malloc returned NULL */
     je      .foi_exit                       /* If yes jump to exit */
