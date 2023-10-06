@@ -316,31 +316,27 @@ wc_tolower:
 
 .globl wc_trim_non_alpha
 wc_trim_non_alpha:
-    pushq   %rbp            /* why? */ 
-    movq    %rsp, %rbp      /* why? */ 
-    movq    %rdi, %rax      /* Load pointer w into %rax */
+    subq    $8,   %rsp
+    movq    %rdi, %r10      /* Load pointer w into %r10 */
 
-
-    /* Move to end of string */
 .Lfind_end:
-    movb    (%rax), %dl     /* Load byte at pointer into %dl */
+    movb    (%r10), %dl     /* Load byte into %dl */
     testb   %dl, %dl        /* Test if byte is zero */
     je      .Lstart_trim    /* If zero, start trimming */
-    incq    %rax            /* Else, move to next char */
+    incq    %r10            /* Else, move to next char */
     jmp     .Lfind_end      /* Loop to find end */
 
 .Lstart_trim:
-    decq    %rax            /* move one char back */
-    movb    (%rax), %dl     /* Load byte at pointer into %dl */
+    movq    $0, (%r10)     /* Set byte to null character */ 
+    decq    %r10           /* move one char back */
+    movb    (%r10), %dl     /* Load byte at pointer into %dl */
     movzbl  %dl, %edi       /* Move byte into %edi for wc_isalpha call */
     call    wc_isalpha      /* Check if char is alphabetic */
-    testl   %eax, %eax      /* Test return value */
+    cmpl     $0, %eax       /* Check if is non alpha */ 
     jne     .Lexit          /* If non-zero, exit */
-    movb    $0, (%rax)      /* Else, set char to zero */
     jmp     .Lstart_trim    /* Loop to trim next char */
-
 .Lexit:
-    leave
+    addq    $8,   %rsp
     ret
 
 /*
@@ -428,37 +424,21 @@ wc_find_or_insert:
 
 .globl wc_dict_find_or_insert
 wc_dict_find_or_insert:
-pushq   %rbp                  /* Saves the old base pointer */
+    pushq   %rbp                  /* Saves the old base pointer */
     movq    %rsp, %rbp         /* Updates the base pointer */
+    subq    $16, %rsp          /* stack alignment */ 
 
-    pushq   %rbx               /* Saves callee-saved registers */
-    pushq   %r12
-    pushq   %r13
-    pushq   %r14
+    movq    %rdi, %r8         /* Moves buckets pointer to %r8 */
+    movl    %esi, %r9d        /* Moves num_buckets to %r9 */
+    movq    %rdx, %rdi       /* Moves string pointer to %rdi */
 
-    movq    %rdi, %rbx         /* Moves buckets[] pointer to %rbx */
-    movl    %esi, %r12d        /* Moves num_buckets to %r12d */
-    movq    %rdx, %r13         /* Moves string pointer to %r13 */
-
-    /* Calculate hash value */
-    movq    %r13, %rdi         /* Moves string to %rdi for wc_hash */
     call    wc_hash            /* Calls hash function */
-    movl    %eax, %r14d        /* Moves hash result to %r14d */
+    movq    %rdi, %r10         /* moves string from %rdi to %r10 */ 
+    xorq    %rdx, %rdx         /* Clears rdx to prepare for division */
+    divl    %r9d              /* Divides contents of rax aka hashcode by num_buckets */
 
-    /* Perform modulo operation */
-    movl    %r14d, %eax        /* Copys hash result to %eax for division */
-    xorq    %rdx, %rdx         /* Clears previous remainder */
-    divl    %r12d              /* Divides by num_buckets */
-
-    /* Load the appropriate bucket based on the hash */
-    movslq  %eax, %rax         /* Sign extend result to 64-bits */
-    shlq    $3, %rax           /* Multiply by sizeof(pointer) to get offset */
-    addq    %rbx, %rax         /* Add the base address of buckets[] */
-    movq    (%rax), %r14       /* Load bucket into %r14 */
-
-    /* Call wc_find_or_insert function */
-    movq    %r14, %rdi         /* Sets head as first parameter */
-    movq    %r13, %rsi         /* Sets string as second parameter */
+    leaq    (%r8, %rdx, 8), %rdi   /* get address of bucket and pass it to rdi for input into find_or_insert */ 
+    movq    %r10, %rsi         /* Sets string as second parameter */
     leaq    -4(%rbp), %rdx     /* Address for 'inserted' local variable */
     call    wc_find_or_insert
 
