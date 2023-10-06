@@ -465,7 +465,21 @@ wc_dict_find_or_insert:
  */
 	.globl wc_free_chain
 wc_free_chain:
-	/* TODO: implement */
+    subq $8, %rsp 
+    movq %rdi, %r8 
+
+.FreeLoop: 
+    testq   %r8, %r8           /* Check if current node is NULL */
+    je .FreeChainDone
+
+    movq %r8, %r9              /* Hold current value of node in buffer register */ 
+    movq   WORDENTRY_NEXT_OFFSET(%r8), %r8              /* Load next node into %r8 */    
+    movq   %r9, %rdi 
+    call   free
+    jmp .FreeLoop                             /* jump back to loop start */ 
+    
+.FreeChainDone
+    addq $8, %rsp 
 	ret
 
 /*
