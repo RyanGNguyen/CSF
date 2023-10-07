@@ -8,7 +8,6 @@
 
 	.globl main
 main:
-	/* TODO: implement */
 	ret
 
 /*

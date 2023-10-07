@@ -187,57 +187,56 @@ wc_isalpha:
  */
 
 	.globl wc_readnext
-wc_readnext:
-    pushq %rbp 
+wc_readnext: 
+    pushq %rbp                                     /* Function prologue */
     movq %rsp, %rbp 
-    pushq %rbx
-    subq $16, %rsp
-
-    movq %rdi, -8(%rbp)
-    movl $0, %ebx
-    movq -8(%rbp), %rdi
-    call fgetc 
+    pushq %r12                                     /* Save contents of callee saved register */
+    subq $16, %rsp 
+  
+    movq %rdi, -8(%rbp)                            /* Save file pointer to stack as local variable */
+    movl $0, %r12d                                 /* initialize counter to 0 */ 
+    movq -8(%rbp), %rdi                           
+    call fgetc                                     /* get first character */ 
     jmp .readnextCond
 
-.readnextLoop:
-    movb %al, %dil
-    call wc_isspace
-    cmpl $0, %eax
-    je .readNotSpace
-    cmpl $0, %ebx
-    jne .wordRead
-    movq -8(%rbp), %rdi
+.readnextLoop: 
+    movb %al, %dil                                
+    call wc_isspace                                
+    cmpl $0, %eax                                  /* Check if character is space */ 
+    je .readNotSpace                               /* Jump to .readNotSpace if not space */ 
+    cmpl $0, %r12d                                 /* If space, see if counter is 0 */ 
+    jne .wordRead                                  /* Jump to word read success section if not 0*/ 
+    movq -8(%rbp), %rdi                            /* Otherwise, read next character and loop*/ 
     call fgetc 
     jmp .readnextCond
 
 .readNotSpace:
-    movb %al, (%rsi)
+    movb %al, (%rsi)                               /* If not a space, add character to word */ 
     incq %rsi 
-    incl %ebx
+    incl %r12d                                     /* Increment and read next character + condition */ 
     movq -8(%rbp), %rdi 
     call fgetc
     
 .readnextCond:
-    cmpb $-1, %al      
-    je .finalCheck
-    cmpl $63, %ebx 
+    cmpb $-1, %al                                        /* Check for EOF */
+    je .finalCheck                                       
+    cmpl $63, %r12d                                      /* Check if counter is greater than max word length */ 
     jb .readnextLoop
 
 .finalCheck:
-    cmpl $0, %ebx  
+    cmpl $0, %r12d                                       /* Check if counter is greater than 0 */ 
     je .wordNotRead
     
-.wordRead:
-    movb $0, (%rsi)
-    movl $1, %eax 
+.wordRead:  
+    movb $0, (%rsi)                                      /* If word is successfully read, add null character */
+    movl $1, %eax                                        /* return 1 */
     jmp .readnextDone
 
 .wordNotRead:
-    movl $0, %eax 
+    movl $0, %eax                                        /* Word was not successfully read, return 0 */ 
 
 .readnextDone:
     addq $16, %rsp
-    popq %rbx
     popq %r12 
     movq %rbp, %rsp 
     popq %rbp 
