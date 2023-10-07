@@ -188,75 +188,88 @@ wc_isalpha:
 
 	.globl wc_readnext
 wc_readnext:
-    pushq   %rbp
-    movq    %rsp, %rbp       /* Sets new base pointer */
-    pushq   %r12             /* Save r12 register */
-    pushq   %rbx             /* Save rbx register */
-    pushq   %r13             /* save r13 register */
-    subq    $32, %rsp        /* Allocates space on stack */
+pushq   %rbp
+    movq    %rsp, %rbp
+    subq    $32, %rsp
 
-    movq    %rdi, -24(%rbp)  /* FILE* in */
-    movq    %rsi, -32(%rbp)  /* char* w */
-    movl    $0, -4(%rbp)     /* int counter i to 0 */
+    movq    %rdi, .param1
+    movq    %rsi, .param2
 
-    jmp     .LcheckEOF       /* jump to EOF CHECK */
+    movl    $0, .local_var
 
-.Lloop:
-    /* Check if character is a whitespace */
-    movzbl  -5(%rbp), %edi   /* Load current char into %edi */
-    call    wc_isspace       /* uses the wc_isspace function */
-    testl   %eax, %eax       /* used if result is non-zero */
-    jne     .Lwhitespace     /* jump if there's white space */
-    /* If not whitespace, process character */
-    movl    -4(%rbp), %eax   /* Load i */
-    cmpq    $63, %rax        /* Compare with MAX_WORDLEN */
-    jae     .LskipChar       /* If >= MAX_WORDLEN, skip char */
-    movl    -4(%rbp), %edx   /* loads counter i to edx */
-    movq    -32(%rbp), %rax  /* loads char* w */
-    addq    %rdx, %rax       /* pointer w moved by 1 */
-    movzbl  -5(%rbp), %edx   /* current char into %edx */
-    movb    %dl, (%rax)      /* stores char in word array */
-    addl    $1, -4(%rbp)     /* icnrements by i */
+    movq    .param1, %rdi
+    call    fetgc
+    movl    %eax, .char_read
 
-.LskipChar:
-/* goes into stream, fetches next char */
-    call    fgetc@PLT        /* reads next char */
-    movb    %al, -5(%rbp)    /* store read char in local */
+StartLoop:
+    cmpl    $-1, .char_read
+    je      Endloop
 
-.LcheckEOF:
-/* checks if char being read is EOF */
-    cmpb    $-1, -5(%rbp)    /* Compares char with EOF */
-    jne     .Lloop           /* not EOF, so keep reading */
-    jmp     .Lend            /* EOF then end */
+    movl    .char_read, %eax
+    movzbl  %al, %edi
+    call    wc_isspace
+    cmpl    %0, %eax
+    je      IsNotSpace
 
-.Lwhitespace:
-    cmpl    $0, -4(%rbp)     /* compare i with 0 */
-    jne     .LwordEnd
-    /* If whitespace and i == 0, fetch next character */
-    call    fgetc@PLT        /* else, read next char */
-    movb    %al, -5(%rbp)    /* store read char in local variable */
-    jmp     .LcheckEOF       /* checks if fetched char is EOF */
+    cmpl    $0, .local_var
+    jne     IsNotFirstChar
 
-.LwordEnd:
-    movl    -4(%rbp), %edx   /* i loaded into %edx */
-    movq    -32(%rbp), %rax  /* load w into %rax */
-    addq    %rdx, %rax       /* increment address by i */
-    movb    $0, (%rax)       /* null term string */
-    movl    $1, %eax         /* set return value to 1 */
-    jmp     .readnext_exit           /* go to function exit */
+    movq    .param1, %rdi
+    call    fgetc
+    movl    %eax, .char_read
+    jmp     LoopContinue
 
-.Lend:
-    /* End of file reached */
-    movl    $0, %eax         /* set return to 0 */ 
+IsNotFirstChar:
 
-.readnext_exit:
-    addq    $32, %rsp        /* deallocate local variable space */
-    popq    %r13             /* restore saved register */
-    popq    %rbx             /* restore saved register */
-    popq    %r12             /* restore saved register */
-    movq %rbp, %rsp         
-    popq %rbp 
-	ret                      /* pops return address off stack */
+   movq     .char_read, %eax
+   movb     %al, %dl
+   movq     .param2, %rax
+   movslq   .local_var, %rcx
+   movb     %dl, (%rax,%rcx)
+   movl     .local_var, %eax
+   addl     $1, %eax
+   movl     %eax, .local_var
+   movq     .param1, %rdi
+   call     fgetc
+   movl     %eax, .char_read
+
+LoopContinue:
+   jmp      ToLoopStart
+
+IsNotSpace:
+   movl     .char_read, %eax
+   movb     %al, %dl
+   movq     .param2, %rax
+   movslq   .local_var, %rcx
+   movb     %dl, (%rax,%rcx)
+   movl     .local_var, %eax
+   addl     $1, %eax
+   movl     %eax, .local_var
+   movq     .param1, %rdi
+   call     fgetc
+   movl     %eax, .char_read
+
+ToLoopStart:
+   jmp      StartLoop
+
+EndLoop:
+   cmpl     $0, .local_var
+   jle      IsNotPositiveVar
+
+   movq     .param2, %rax
+   movslq   .local_var, %rcx
+   movb     $0, (%rax, %rcx)
+   movl     $1, .result
+   jmp      LoopExit
+
+IsNotPositiveVar:
+   movl     $0, .result
+
+LoopExit:
+   movl     .result, %eax
+   addq     $32, %rsp
+   popq     %rbp
+   ret
 
 /*
  * 20 line version of the above assembly code (not needed)
