@@ -188,106 +188,60 @@ wc_isalpha:
 
 	.globl wc_readnext
 wc_readnext:
-pushq   %rbp
-    movq    %rsp, %rbp
-    subq    $32, %rsp
+    pushq %rbp 
+    movq %rsp, %rbp 
+    pushq %rbx
+    subq $16, %rsp
 
-    movq    %rdi, .param1
-    movq    %rsi, .param2
+    movq %rdi, -8(%rbp)
+    movl $0, %ebx
+    movq -8(%rbp), %rdi
+    call fgetc 
+    jmp .readnextCond
 
-    movl    $0, .local_var
+.readnextLoop:
+    movb %al, %dil
+    call wc_isspace
+    cmpl $0, %eax
+    je .readNotSpace
+    cmpl $0, %ebx
+    jne .wordRead
+    movq -8(%rbp), %rdi
+    call fgetc 
+    jmp .readnextCond
 
-    movq    .param1, %rdi
-    call    fetgc
-    movl    %eax, .char_read
+.readNotSpace:
+    movb %al, (%rsi)
+    incq %rsi 
+    incl %ebx
+    movq -8(%rbp), %rdi 
+    call fgetc
+    
+.readnextCond:
+    cmpb $-1, %al      
+    je .finalCheck
+    cmpl $63, %ebx 
+    jb .readnextLoop
 
-StartLoop:
-    cmpl    $-1, .char_read
-    je      Endloop
+.finalCheck:
+    cmpl $0, %ebx  
+    je .wordNotRead
+    
+.wordRead:
+    movb $0, (%rsi)
+    movl $1, %eax 
+    jmp .readnextDone
 
-    movl    .char_read, %eax
-    movzbl  %al, %edi
-    call    wc_isspace
-    cmpl    %0, %eax
-    je      IsNotSpace
+.wordNotRead:
+    movl $0, %eax 
 
-    cmpl    $0, .local_var
-    jne     IsNotFirstChar
-
-    movq    .param1, %rdi
-    call    fgetc
-    movl    %eax, .char_read
-    jmp     LoopContinue
-
-IsNotFirstChar:
-
-   movq     .char_read, %eax
-   movb     %al, %dl
-   movq     .param2, %rax
-   movslq   .local_var, %rcx
-   movb     %dl, (%rax,%rcx)
-   movl     .local_var, %eax
-   addl     $1, %eax
-   movl     %eax, .local_var
-   movq     .param1, %rdi
-   call     fgetc
-   movl     %eax, .char_read
-
-LoopContinue:
-   jmp      ToLoopStart
-
-IsNotSpace:
-   movl     .char_read, %eax
-   movb     %al, %dl
-   movq     .param2, %rax
-   movslq   .local_var, %rcx
-   movb     %dl, (%rax,%rcx)
-   movl     .local_var, %eax
-   addl     $1, %eax
-   movl     %eax, .local_var
-   movq     .param1, %rdi
-   call     fgetc
-   movl     %eax, .char_read
-
-ToLoopStart:
-   jmp      StartLoop
-
-EndLoop:
-   cmpl     $0, .local_var
-   jle      IsNotPositiveVar
-
-   movq     .param2, %rax
-   movslq   .local_var, %rcx
-   movb     $0, (%rax, %rcx)
-   movl     $1, .result
-   jmp      LoopExit
-
-IsNotPositiveVar:
-   movl     $0, .result
-
-LoopExit:
-   movl     .result, %eax
-   addq     $32, %rsp
-   popq     %rbp
-   ret
-
-/*
- * 20 line version of the above assembly code (not needed)
- * .globl wc_readnext
- * wc_readnext:
- * pushq %rbp; pushq %r12; pushq %rbx; pushq %r13; subq $32, %rsp
- * movq %rdi, -24(%rbp); movq %rsi, -32(%rbp); movl $0, -4(%rbp)
- * .Lloop:
- * call fgetc@PLT; movb %al, -5(%rbp); cmpb $-1, -5(%rbp); je .Lend
- * movzbl -5(%rbp), %edi; call wc_isspace; testl %eax, %eax; jne .Lwhitespace
- * movl -4(%rbp), %eax; cmpq $63, %rax; jae .Lloop
- * addb %al, -32(%rbp, %rax); addl $1, -4(%rbp); jmp .Lloop
- * .Lwhitespace:
- *  cmpl $0, -4(%rbp); je .Lloop; xorl %eax, %eax; inc %eax; ret
- * .Lend:
- * xorl %eax, %eax; ret
- *
- */
+.readnextDone:
+    addq $16, %rsp
+    popq %rbx
+    popq %r12 
+    movq %rbp, %rsp 
+    popq %rbp 
+    ret
 
 /*
  * Convert the NUL-terminated character string in the array
@@ -378,10 +332,10 @@ wc_find_or_insert:
 
     movq    %rdi, -8(%rbp)         /* Moves head pointer to stack */
     movq    %rsi, -16(%rbp)        /* Moves string pointer to stack */
-    movq    %rdx, -24(%rbp)        /* Moves inserted pointer to stack */
+    movq    %rdx, -24(%rbp)    
+    movq    -8(%rbp), %r8      /* Copy head pointer to buffer register */
 
 .loop_check_word:
-    movq    -8(%rbp), %r8      /* Copy head pointer to buffer register */  
     testq   %r8, %r8           /* Check if current node is NULL */
     je      .allocate_new      /* If yes, jump to allocate new node */
 
@@ -396,8 +350,8 @@ wc_find_or_insert:
 
 .word_found:
     movq    %r8, %r10          /* Moves WordEntry pointer to %r10 */ 
-    movq    -24(%rbp), %r9     /* Gets pointer to inserted */ 
-    movl    $0, (%r9)         /* Sets inserted to 0 */
+    movq    -24(%rbp), %r9
+    movl     $0, (%r9)         /* Sets inserted to 0 */
     jmp     .foi_exit          /* jump to function exit */
 
 .allocate_new:
@@ -409,11 +363,12 @@ wc_find_or_insert:
     movq    %rax, %rdi                  /* Moves newly allocated memory pointer to %rdi */
     movq    -16(%rbp), %rsi            /* Copy over string to buffer register */
     call wc_str_copy
-    movq    %rdi, %r10                 /* move struct to buffer register */ 
+    movq    %rax, %r10                          /* move struct to buffer register */ 
     movl    $0, WORDENTRY_COUNT_OFFSET(%r10)                 /* Sets count to 0 */
-    movq    %r8, WORDENTRY_NEXT_OFFSET(%r10)                /* Sets next to old head */
-    movq    -24(%rbp), %r9                        /* Gets pointer to inserted */
-    movl    $1, (%r9)                             /* Sets inserted to 1 */
+    movq    -8(%rbp), %r8                                    
+    movq    %r8, WORDENTRY_NEXT_OFFSET(%r10)                /* Sets next to original head pointer */
+    movq    -24(%rbp), %r9     
+    movl    $1, (%r9)         /* Sets inserted to 0 */
 
 .foi_exit:
     movq    %r10, %rax         /* return struct entry pointer */ 
@@ -439,35 +394,39 @@ wc_find_or_insert:
 wc_dict_find_or_insert:
     pushq   %rbp                  /* Saves the old base pointer */
     movq    %rsp, %rbp         /* Updates the base pointer */
-    subq    $16, %rsp          /* stack alignment */ 
+    pushq   %rbx        
+    pushq   %r12
+    subq    $32, %rsp          /* stack alignment */ 
 
-    movq    %rdi, %r8         /* Moves buckets pointer to %r8 */
-    movl    %esi, %r9d        /* Moves num_buckets to %r9 */
-    movq    %rdx, %rdi       /* Moves string pointer to %rdi */
+    movq    %rdi, -8(%rbp)         /* Moves buckets pointer to stack */
+    movq    %rsi, -16(%rbp)        /* Moves num_buckets to stack */
+    movq    %rdx, -24(%rbp)        /* Moves search word to stack */
+    movq    -24(%rbp), %rdi   
 
     call    wc_hash            /* Calls hash function */
-    movq    %rdi, %r10         /* moves string from %rdi to %r10 */ 
     xorq    %rdx, %rdx         /* Clears rdx to prepare for division */
-    divl    %r9d              /* Divides contents of rax aka hashcode by num_buckets */
+    divl    -16(%rbp)              /* Divides contents of rax aka hashcode by num_buckets */
 
-    leaq    (%r8, %rdx, 8), %rdi   /* get address of bucket and pass it to rdi for input into find_or_insert */ 
-    movq    %r10, %rsi         /* Sets string as second parameter */
-    leaq    -4(%rbp), %rdx     /* Address for 'inserted' local variable */
+    movq    -8(%rbp), %rbx    
+    leaq    (%rbx, %rdx, 8), %r12
+    movq     %r12, %rdi   /* get address of bucket and pass it to rdi for input */ 
+    movq    -24(%rbp), %rsi         /* Sets string as second parameter */
+    leaq    -32(%rbp), %rdx     /* Address for 'inserted' local variable */
     call    wc_find_or_insert
 
     /* Check if a new entry was inserted */
-    cmpl    $0, -4(%rbp)       /* Compares inserted with 0 */
+    cmpl    $0, -32(%rbp)       /* Compares inserted with 0 */
     je      .exit              /* If it's not inserted jump to exit */
 
     /* Update the bucket to point to the new head of the list */
-    movq    %rax, (%rbx)
+    movq     %rax, (%r12)
 
 .exit:
-    popq    %r14               /* Restores callee-saved registers */
-    popq    %r13
-    popq    %r12
-    popq    %rbx
-    popq    %rbp               /* Restores old base pointer */
+    addq   $32, %rsp          /* stack alignment */
+    popq   %r12
+    popq   %rbx 
+    movq   %rbp, %rsp         /* Updates the base pointer */
+    popq   %rbp                  /* Saves the old base pointer */
     ret
 
 /*
