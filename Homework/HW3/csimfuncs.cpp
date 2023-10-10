@@ -1,16 +1,18 @@
 #include "csimfuncs.h"
 
 int checkArgs(unsigned argc, char* argv[]) {
-    int sumErr = 0;                                  // Subject to change
-    sumErr += checkArgc(argc);
-    sumErr += checkNumSets(argv[1]);                     
-    sumErr += checkNumBlocks(argv[2]);
-    sumErr += checkNumBytes(argv[3]);
-    sumErr += checkWriteAlloc(argv[4]);
-    sumErr += checkWriteThrough(argv[5]);
-    sumErr += checkWriteBackAndNoAlloc(argv[4], argv[5]);
-
-    return sumErr;
+    int err = 0;                                  // Subject to change
+    err += checkArgc(argc);
+    err += checkNumSets(argv[1]);                     
+    err += checkNumBlocks(argv[2]);
+    err += checkNumBytes(argv[3]);
+    err += checkWriteAlloc(argv[4]);
+    err += checkWriteThrough(argv[5]);
+    err += checkWriteBackAndNoAlloc(argv[4], argv[5]);
+    err += checkEviction(argc, argv[1], argv[2], argv[6]); 
+    err += checkArg7(argc, argv[7]);
+    err += checkTraceFile(argv[8]);
+    return err;
 }
 
 int checkArgc(unsigned argc) {
@@ -126,6 +128,43 @@ int checkWriteBackAndNoAlloc(std::string arg4, std::string arg5) {
     return 0;
 }
 
-int checkEviction(std::string arg1, std::string arg2, std::string arg6) {
-    //TODO
+int checkEviction(unsigned argc, std::string arg1, std::string arg2, std::string arg6) {
+    // If argc == 8, no eviction policy was passed as parameter
+    if (argc == 8) {
+        return 0;
+    }
+    // Check if eviction policy is called for a direct-mapped cache
+    unsigned numSets = std::stoul(arg1, NULL, 10);
+    unsigned numBlocks = std::stoul(arg2, NULL, 10);
+    if (numSets > 1 && numBlocks == 1) {
+        std::cerr << "Eviction policies are invalid for a direct-mapped cache" << std::endl;
+        return 1;
+    } else {
+        // Check if eviction policy is valid
+        if (arg6.compare("lru") != 0 && arg6.compare("fifo") != 0) {
+            std::cerr << "Invalid argument for eviction policy" << std::endl;
+            return 1;
+        }
+    }
+    return 0; 
+}
+
+int checkArg7(unsigned argc, std::string arg7) {
+    unsigned index = (argc == 8) ? 6 : 7;
+    // Check if argument 7 is less than sign
+    if (arg7.compare("<") != 0) {
+        std::cerr << "Invalid argument for argument" << index << std::endl;
+        return 1;
+    }
+    return 0; 
+}
+
+int checkTraceFile(std::string arg8) {
+    // Check if trace file is valid
+    std::ifstream tracefile(arg8);
+    if (!tracefile.is_open()) {
+        std::cerr << "Invalid trace file" << std::endl;
+        return 1;
+    }
+    return 0;
 }

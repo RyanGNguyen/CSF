@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include <string>
 
 // Checks if the arguments are valid
@@ -30,6 +31,12 @@ int checkWriteThrough(std::string arg5);
 int checkWriteBackAndNoAlloc(std::string arg4, std::string arg5);
 
 // Check eviction policy
-int checkEviction(std::string arg1, std::string arg2, std::string arg4, std::string arg6); 
+int checkEviction(unsigned argc, std::string arg1, std::string arg2, std::string arg6); 
+
+// Check argument 7
+int checkArg7(unsigned argc, std::string arg7);
+
+// Check trace file
+int checkTraceFile(std::string arg8);
 
 #endif // CSIMFUNCS_H
