@@ -50,7 +50,8 @@ int main(int argc, char* argv[]) {
             } else if (v[0].compare("s") == 0) {  // If word is "s", increment total loads
                 total_stores++; 
             }
-            std::bitset<32> address{v[1]};           // Convert address to binary bitset
+            int n = std::stoi(v[1], NULL, 16);        // Convert address to decimal int
+            std::bitset<32> address{n};           // Convert int to binary bitset
             
             
             // Read in size 
