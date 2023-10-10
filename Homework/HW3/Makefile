@@ -1,6 +1,6 @@
 # CSF Assignment 3 Makefile
-CC = gcc
-CFLAGS = -g -Wall -Wextra -pedantic -std=gnu++17 -lstdc++
+CC = g++
+CFLAGS = -g -Wall -Wextra -pedantic -std=gnu++17 
 
 C_SRCS = csimmain.cpp csimfuncs.cpp 
 C_OBJS = csimmain.o csimfuncs.o
