@@ -1,6 +1,6 @@
 #include "csimfuncs.h"
 
-int checkArgs(unsigned argc, char* argv[]) {
+int checkArgs(int argc, char* argv[]) {
     int err = 0;                                  // Subject to change
     err += checkArgc(argc);
     err += checkNumSets(argv[1]);                     

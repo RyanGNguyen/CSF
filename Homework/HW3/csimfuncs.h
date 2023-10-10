@@ -7,7 +7,7 @@
 #include <string>
 
 // Checks if the arguments are valid
-int checkArgs(unsigned argc, char* argv[]);
+int checkArgs(int argc, char* argv[]);
 
 // Check for correct number of arguments
 int checkArgc(unsigned argc);
