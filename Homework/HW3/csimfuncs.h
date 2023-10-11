@@ -6,6 +6,20 @@
 #include <fstream>
 #include <string>
 
+struct Slot {
+  unsigned tag;
+  bool valid; 
+  unsigned load_ts, access_ts; 
+};
+
+struct Set {
+  std::vector<Slot> slots;
+};
+
+struct Cache {
+  std::vector<Set> sets;
+};
+
 // Checks if the arguments are valid
 int checkArgs(int argc, char* argv[]);
 
