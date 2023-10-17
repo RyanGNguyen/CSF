@@ -5,6 +5,7 @@
 #include <string>
 #include <bitset>
 #include <vector>
+#include <cmath>
 
 #include "csimfuncs.h"
 
@@ -24,6 +25,12 @@ int main(int argc, char* argv[]) {
     std::string writeThrough = argv[5];
     std::string filename = (argc == 8) ? argv[7] : argv[8];
 
+    Cache cache;                                   // Initialize cache 
+    cache.sets.resize(numSets);
+    for (unsigned i = 0; i < numSets; i++) {
+        cache.sets[i].slots.resize(numBlocks);
+    }
+
     unsigned int total_loads = 0;
     unsigned int total_stores = 0;
     unsigned int load_hits = 0;
@@ -37,9 +44,9 @@ int main(int argc, char* argv[]) {
     if (traceFile.is_open()) {    
         std::string buffer;
         while (std::getline(traceFile, buffer)) {     // Read each line from file into a buffer string
-            std::istringstream iss(buffer);           // Create a string stream from the buffer 
+            std::istringstream iss(buffer);           // Convert buffer string into a stringstream
             std::vector<std::string> v; 
-            std::string word;                              
+            std::string word;   
             for (unsigned i = 0; i < 3; i++) {       // Divide each line into 3 words
                 iss >> word; 
                 v.push_back(word);                   // Store each word in a vector 
@@ -50,10 +57,19 @@ int main(int argc, char* argv[]) {
             } else if (v[0].compare("s") == 0) {  // If word is "s", increment total loads
                 total_stores++; 
             }
-            int n = std::stoi(v[1], NULL, 16);        // Convert address to decimal int
-            std::bitset<32> address{n};           // Convert int to binary bitset
+            unsigned n = std::stoi(v[1], NULL, 16);        // Convert hex address to unsigned int
+            std::bitset<32> address{n};                    // Convert unsigned int to binary
+            std::string bitString = address.to_string();   // Convert binary to string 
+
+            std::string tag = bitString.substr(0, log2(numBlocks));                   
+            std::string index = bitString.substr(log2(numBlocks), log2(numSets));
+            //std::string offset = bitString.substr(log2(numBlocks) + log2(numSets), log2(numBytes));
             
-            
+            unsigned t = std::stoul(tag, NULL);
+            unsigned i = std::stoul(index, NULL);
+
+            cache.sets[i].slots[t].tag = t; 
+
             // Read in size 
         }
     }
