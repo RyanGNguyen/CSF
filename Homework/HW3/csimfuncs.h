@@ -2,6 +2,7 @@
 #define CSIMFUNCS_H
 
 #include <cstdlib>
+#include <cstdint>
 #include <iostream>
 #include <fstream>
 #include <string>
