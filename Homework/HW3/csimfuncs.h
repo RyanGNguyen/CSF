@@ -48,6 +48,12 @@ void checkWriteThrough(std::string arg5);
 void checkWriteBackAndNoAlloc(std::string arg4, std::string arg5);
 
 // Check eviction policy
-void checkEviction(std::string arg2, std::string arg6); 
+void checkEviction(std::string arg2, std::string arg6);
+
+// Get tag bits
+std::uint32_t get_tag(std::uint32_t address, int numSets, int blockBits);
+
+// Get set bits
+std::uint32_t get_set(std::uint32_t address,int numSets, int blockBits);
 
 #endif // CSIMFUNCS_H
