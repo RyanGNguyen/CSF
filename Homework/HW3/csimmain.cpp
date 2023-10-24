@@ -55,8 +55,12 @@ int main(int argc, char* argv[]) {
                 total_stores++; 
             }
             // Address check
+            int num_block_bits = log2(numBlocks);
+            
             unsigned n = std::stoi(v[1], NULL, 16);        // Convert hex address to unsigned int
             std::bitset<32> address{n};                    // Convert unsigned int to binary
+            int set_tags = get_set(n, numSets, num_block_bits); // Get set bits
+            int tag_bits = get_tag(n, numSets, num_block_bits); // Get tag bits
             std::string bitString = address.to_string();   // Convert binary to string 
 
             std::string tag = bitString.substr(0, log2(numBlocks));                   
