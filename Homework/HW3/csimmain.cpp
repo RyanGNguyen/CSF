@@ -9,6 +9,13 @@
 
 #include "csimfuncs.h"
 
+unsigned int total_loads = 0;
+unsigned int total_stores = 0;
+unsigned int load_hits = 0;
+unsigned int load_misses = 0;
+unsigned int store_hits = 0;
+unsigned int store_misses = 0;
+unsigned int total_cycles = 0;
 
 int main(int argc, char* argv[]) {
     //Check if arguments are valid
@@ -26,16 +33,10 @@ int main(int argc, char* argv[]) {
     for (unsigned i = 0; i < numSets; i++) {
         cache.sets[i].slots.resize(numBlocks);
     }
-
-    unsigned int total_loads = 0;
-    unsigned int total_stores = 0;
-    unsigned int load_hits = 0;
-    unsigned int load_misses = 0;
-    unsigned int store_hits = 0;
-    unsigned int store_misses = 0;
-    unsigned int total_cycles = 0;
-   
-    std::ifstream traceFile(filename);  
+    
+    std::string fileName;
+    fileName << std::cin; 
+    std::ifstream traceFile(fileName);  
 
     if (traceFile.is_open()) {    
         std::string buffer;
@@ -53,6 +54,7 @@ int main(int argc, char* argv[]) {
             } else if (v[0].compare("s") == 0) {  // If word is "s", increment total loads
                 total_stores++; 
             }
+            // Address check
             unsigned n = std::stoi(v[1], NULL, 16);        // Convert hex address to unsigned int
             std::bitset<32> address{n};                    // Convert unsigned int to binary
             std::string bitString = address.to_string();   // Convert binary to string 

@@ -136,7 +136,7 @@ std::uint32_t get_tag(std::uint32_t address, int setBits, int blockBits) {
     return address >> setBits + blockBits;
 }
 
-std::uint32_t get_set(std::uint32_t address,int numSets, int blockBits) {
+std::uint32_t get_set(std::uint32_t address, int numSets, int blockBits) {
     int set_mask = numSets- 1;
     return (address >> blockBits) & set_mask;
 }
