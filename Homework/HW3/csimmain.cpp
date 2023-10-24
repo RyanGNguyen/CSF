@@ -49,21 +49,19 @@ int main(int argc, char* argv[]) {
             int num_block_bits = log2(numBlocks);
             
             unsigned n = std::stoi(v[1], NULL, 16);        // Convert hex address to unsigned int
-            int set_tags = get_set(n, numSets, num_block_bits); // Get set bits
-            std::bitset<32> address{n};                    // Convert unsigned int to binary
             int set_bits = get_set(n, numSets, num_block_bits); // Get set bits
             int tag_bits = get_tag(n, numSets, num_block_bits); // Get tag bits
 
-            cache.sets[set_tags].slots[tag_bits].tag = tag_bits;
-            cache.sets[set_tags].slots[tag_bits].valid = true;
+            cache.sets[set_bits].slots[tag_bits].tag = tag_bits;
+            cache.sets[set_bits].slots[tag_bits].valid = true;
             auto const now = std::chrono::system_clock::now();
 
             // Store/Load check 
             if (v[0].compare("l") == 0) {         // If word is "l", update load info
-                cache.sets[set_tags].slots[tag_bits].load_ts = std::chrono::system_clock::to_time_t(now) - start_t; 
+                cache.sets[set_bits].slots[tag_bits].load_ts = std::chrono::system_clock::to_time_t(now) - start_t; 
                 total_loads++;
             } else if (v[0].compare("s") == 0) {  // If word is "s", update store info
-                cache.sets[set_tags].slots[tag_bits].access_ts = std::chrono::system_clock::to_time_t(now) - start_t; 
+                cache.sets[set_bits].slots[tag_bits].access_ts = std::chrono::system_clock::to_time_t(now) - start_t; 
                 total_stores++; 
             }
 //test msg
