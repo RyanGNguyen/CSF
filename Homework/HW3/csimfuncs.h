@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cmath>
 
 struct Slot {
   unsigned tag;
