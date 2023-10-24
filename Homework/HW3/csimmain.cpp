@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
                 cache.sets[set_tags].slots[tag_bits].access_ts = std::chrono::system_clock::to_time_t(now) - start_t; 
                 total_stores++; 
             }
-
+//test msg
             // Read in size 
         }
     }
