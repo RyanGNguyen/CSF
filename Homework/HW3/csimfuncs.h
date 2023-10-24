@@ -11,8 +11,9 @@
 
 struct Slot {
   unsigned tag;
-  bool valid; 
-  unsigned load_ts, access_ts; 
+  bool valid = false; 
+  bool dirty = false; 
+  double load_ts, access_ts; 
 };
 
 struct Set {
