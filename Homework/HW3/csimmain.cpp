@@ -12,18 +12,14 @@
 
 int main(int argc, char* argv[]) {
     //Check if arguments are valid
-    int err = checkArgs(argc, argv); 
-    if (err > 0) {
-        std::cerr << "Invalid Arguments" << std::endl;
-        return err; 
-    }
+    checkArgs(argc, argv); 
 
     unsigned numSets = std::stoul(argv[1], NULL, 10); 
     unsigned numBlocks = std::stoul(argv[2], NULL, 10);
     unsigned numBytes = std::stoul(argv[3], NULL, 10);
     std::string writeAlloc = argv[4];
     std::string writeThrough = argv[5];
-    std::string filename = (argc == 8) ? argv[7] : argv[8];
+    std::string eviction = argv[6];
 
     Cache cache;                                   // Initialize cache 
     cache.sets.resize(numSets);
