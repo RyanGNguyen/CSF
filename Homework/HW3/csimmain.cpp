@@ -50,6 +50,8 @@ int main(int argc, char* argv[]) {
             
             unsigned n = std::stoi(v[1], NULL, 16);        // Convert hex address to unsigned int
             int set_tags = get_set(n, numSets, num_block_bits); // Get set bits
+            std::bitset<32> address{n};                    // Convert unsigned int to binary
+            int set_bits = get_set(n, numSets, num_block_bits); // Get set bits
             int tag_bits = get_tag(n, numSets, num_block_bits); // Get tag bits
 
             cache.sets[set_tags].slots[tag_bits].tag = tag_bits;
