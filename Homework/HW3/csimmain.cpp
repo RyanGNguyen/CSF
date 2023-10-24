@@ -1,11 +1,6 @@
-#include <cstdlib>
-#include <iostream>
-#include <fstream>
 #include <sstream>
-#include <string>
-#include <bitset>
-#include <vector>
-#include <cmath>
+#include <chrono>
+#include <ctime>    
 
 #include "csimfuncs.h"
 
@@ -16,6 +11,8 @@ unsigned int load_misses = 0;
 unsigned int store_hits = 0;
 unsigned int store_misses = 0;
 unsigned int total_cycles = 0;
+
+std::time_t const start_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()); 
 
 int main(int argc, char* argv[]) {
     //Check if arguments are valid
@@ -48,29 +45,27 @@ int main(int argc, char* argv[]) {
                 iss >> word; 
                 v.push_back(word);                   // Store each word in a vector 
             }                 
-            // Store/Load check 
-            if (v[0].compare("l") == 0) {         // If word is "l", increment total loads
-                total_loads++;
-            } else if (v[0].compare("s") == 0) {  // If word is "s", increment total loads
-                total_stores++; 
-            }
             // Address check
             int num_block_bits = log2(numBlocks);
             
             unsigned n = std::stoi(v[1], NULL, 16);        // Convert hex address to unsigned int
+            int set_tags = get_set(n, numSets, num_block_bits); // Get set bits
             std::bitset<32> address{n};                    // Convert unsigned int to binary
             int set_bits = get_set(n, numSets, num_block_bits); // Get set bits
             int tag_bits = get_tag(n, numSets, num_block_bits); // Get tag bits
-            std::string bitString = address.to_string();   // Convert binary to string 
 
-            std::string tag = bitString.substr(0, log2(numBlocks));                   
-            std::string index = bitString.substr(log2(numBlocks), log2(numSets));
-            //std::string offset = bitString.substr(log2(numBlocks) + log2(numSets), log2(numBytes));
-            
-            unsigned t = std::stoul(tag, NULL);
-            unsigned i = std::stoul(index, NULL);
+            cache.sets[set_tags].slots[tag_bits].tag = tag_bits;
+            cache.sets[set_tags].slots[tag_bits].valid = true;
+            auto const now = std::chrono::system_clock::now();
 
-            cache.sets[i].slots[t].tag = t; 
+            // Store/Load check 
+            if (v[0].compare("l") == 0) {         // If word is "l", update load info
+                cache.sets[set_tags].slots[tag_bits].load_ts = std::chrono::system_clock::to_time_t(now) - start_t; 
+                total_loads++;
+            } else if (v[0].compare("s") == 0) {  // If word is "s", update store info
+                cache.sets[set_tags].slots[tag_bits].access_ts = std::chrono::system_clock::to_time_t(now) - start_t; 
+                total_stores++; 
+            }
 
             // Read in size 
         }
