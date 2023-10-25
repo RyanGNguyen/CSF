@@ -8,18 +8,24 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <list>
+#include <map>
 
 struct Slot {
   unsigned tag;
-  bool valid = false; 
-  bool dirty = false; 
-  double load_ts, access_ts; 
-};
 
+  bool dirty = false; 
+};
+/* 
 struct Set {
   std::vector<Slot> slots;
 };
+*/
 
+struct Set {
+    std::list<Slot> slots; // list of all slots in a set
+    std::map<unsigned, std::list<Slot>::iterator> slot_tag_map; // map of tag to iterator of a slot
+};
 /*
 struct Cache {
   std::vector<Set> sets;
@@ -28,9 +34,9 @@ struct Cache {
 
 class Cache {
   public:
-    int numSets;
-    int numBlocks;
-    int numBytes;
+    unsigned int numSets;
+    unsigned int numBlocks;
+    unsigned int numBytes;
     bool allocate_or_no; // true = write allocate, false = no write allocate
     bool through_or_back; // true = write through, false = write back
     bool lru_fifo; // true = lru, false = fifo
@@ -47,11 +53,16 @@ class Cache {
 
     Cache(char* parameters[]);
 
-    int get_tag(std::uint32_t address, int numSets, int blockBits);
-    int get_index(std::uint32_t address, int numSets, int blockBits);
+    unsigned int get_tag(std::uint32_t address);
+    unsigned int get_index(std::uint32_t address);
 
     bool find_hit(unsigned index, unsigned tag);
 
+    void runTrace(char instruction, uint32_t address);
+    void load(uint32_t address);
+    void store(uint32_t address);
+    void add_slot(unsigned index, unsigned tag);
+    void print_statistics();
 };
 
 // Checks if the arguments are valid

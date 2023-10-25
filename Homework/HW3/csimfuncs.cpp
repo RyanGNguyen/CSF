@@ -10,9 +10,9 @@
 using namespace std;
 
 Cache::Cache(char* parameters[]) {
-    numSets = stoi(parameters[1]);
-    numBlocks = stoi(parameters[2]);
-    numBytes = stoi(parameters[3]);
+    numSets = stoul(parameters[1]);
+    numBlocks = stoul(parameters[2]);
+    numBytes = stoul(parameters[3]);
     allocate_or_no = strcmp(parameters[4], "write-allocate") == 0 ? true : false;
     through_or_back = strcmp(parameters[5], "write-through") == 0 ? true : false;
     lru_fifo = strcmp(parameters[6], "lru") == 0 ? true : false;
@@ -22,6 +22,25 @@ Cache::Cache(char* parameters[]) {
         sets.push_back(set);
     }
 }
+
+unsigned int get_tag(std::uint32_t address) {
+    return address >> log2(numBytes) >> log2(Cache::numSets);
+}
+
+unsigned int get_index(std::uint32_t address) {
+    int set_mask = numSets - 1;
+    return (address >> blockBits) & set_mask;
+}
+
+void Cache::runTrace(char instruction, uint32_t address)  {
+    if (instruction == 'l') {
+        load(address);
+    } else {
+        store(address);
+    }
+}
+
+
 
 void checkArgs(int argc, char* argv[]) {
     checkArgc(argc);
