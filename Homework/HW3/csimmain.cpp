@@ -1,8 +1,3 @@
-#include <fstream>
-#include <iostream>
-#include <stdio.h>
-#include <string.h>
-#include <isstream>
 #include "csimfuncs.h"
 
 int main(int argc, char* argv[]) {
@@ -13,15 +8,15 @@ int main(int argc, char* argv[]) {
     Cache cache(argv); 
     
     std::string line;
-    while (getline(cin, line)){
-        istringstream iss(line);               // Convert each line into a stringstream
-        vector<string> v; 
-        string word;   
+    while (std::getline(std::cin, line)){
+        std::istringstream iss(line);               // Convert each line into a stringstream
+        std::vector<std::string> v; 
+        std::string word;   
         for (unsigned i = 0; i < 3; i++) {       // Divide each line into 3 words
             iss >> word; 
             v.push_back(word);                   // Store each word in a vector 
         }
-        Cache.runTrace(v[0], stoul(v[1], NULL, 16));             // Run trace
+        cache.runTrace(v[0], std::stoul(v[1], NULL, 16));       // Run trace
     }
     cache.print_statistics();                   // Print statistics
 

@@ -2,6 +2,8 @@
 #define CSIMFUNCS_H
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <cstdint>
 #include <cstdlib>
 #include <string>
@@ -47,7 +49,7 @@ class Cache {
 
     bool find_hit(unsigned int index, unsigned int tag);
 
-    void runTrace(char instruction, std::uint32_t address);
+    void runTrace(std::string instruction, std::uint32_t address);
     void load(std::uint32_t address);
     void store(std::uint32_t address);
     void add_slot(unsigned int index, unsigned int tag);

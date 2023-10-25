@@ -29,8 +29,8 @@ bool Cache::find_hit(unsigned int index, unsigned int tag) {
     return false;
 }
 
-void Cache::runTrace(char instruction, std::uint32_t address)  {
-    if (instruction == 'l') {
+void Cache::runTrace(std::string instruction, std::uint32_t address)  {
+    if (instruction.compare("l") == 0) {
         load(address);
     } else {
         store(address);
