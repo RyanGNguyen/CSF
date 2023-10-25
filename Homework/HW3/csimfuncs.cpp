@@ -1,4 +1,27 @@
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <cmath>
+#include <list>
+#include <vector>
+#include <map>
 #include "csimfuncs.h"
+
+using namespace std;
+
+Cache::Cache(char* parameters[]) {
+    numSets = stoi(parameters[1]);
+    numBlocks = stoi(parameters[2]);
+    numBytes = stoi(parameters[3]);
+    allocate_or_no = strcmp(parameters[4], "write-allocate") == 0 ? true : false;
+    through_or_back = strcmp(parameters[5], "write-through") == 0 ? true : false;
+    lru_fifo = strcmp(parameters[6], "lru") == 0 ? true : false;
+
+    for (int i = 0; i < numSets; i++) {
+        Set set;
+        sets.push_back(set);
+    }
+}
 
 void checkArgs(int argc, char* argv[]) {
     checkArgc(argc);
