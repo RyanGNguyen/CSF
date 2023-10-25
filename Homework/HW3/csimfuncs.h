@@ -20,9 +20,39 @@ struct Set {
   std::vector<Slot> slots;
 };
 
+/*
 struct Cache {
   std::vector<Set> sets;
 };
+*/
+
+class Cache {
+  public:
+    int numSets;
+    int numBlocks;
+    int numBytes;
+    bool allocate_or_no; // true = write allocate, false = no write allocate
+    bool through_or_back; // true = write through, false = write back
+    bool lru_fifo; // true = lru, false = fifo
+
+    unsigned int total_loads = 0;
+    unsigned int total_stores = 0;
+    unsigned int load_hits = 0;
+    unsigned int load_misses = 0;
+    unsigned int store_hits = 0;
+    unsigned int store_misses = 0;
+    unsigned int total_cycles = 0;
+
+    std::vector<Sets> sets;
+
+    Cache(char* parameters[]);
+
+    int get_tag(std::uint32_t address, int numSets, int blockBits);
+    int get_index(std::uint32_t address, int numSets, int blockBits);
+
+    bool find_hit(unsigned index, unsigned tag);
+
+}
 
 // Checks if the arguments are valid
 void checkArgs(int argc, char* argv[]);
