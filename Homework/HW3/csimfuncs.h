@@ -13,7 +13,6 @@
 
 struct Slot {
   unsigned tag;
-
   bool dirty = false; 
 };
 /* 
@@ -56,12 +55,12 @@ class Cache {
     unsigned int get_tag(std::uint32_t address);
     unsigned int get_index(std::uint32_t address);
 
-    bool find_hit(unsigned index, unsigned tag);
+    bool find_hit(unsigned int index, unsigned int tag);
 
     void runTrace(char instruction, uint32_t address);
     void load(uint32_t address);
     void store(uint32_t address);
-    void add_slot(unsigned index, unsigned tag);
+    void add_slot(unsigned int index, unsigned int tag);
     void print_statistics();
 };
 
@@ -91,11 +90,5 @@ void checkWriteBackAndNoAlloc(std::string arg4, std::string arg5);
 
 // Check eviction policy
 void checkEviction(std::string arg2, std::string arg6);
-
-// Get tag bits
-std::uint32_t get_tag(std::uint32_t address, int numSets, int blockBits);
-
-// Get set bits
-std::uint32_t get_set(std::uint32_t address,int numSets, int blockBits);
 
 #endif // CSIMFUNCS_H

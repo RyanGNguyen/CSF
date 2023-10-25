@@ -23,13 +23,19 @@ Cache::Cache(char* parameters[]) {
     }
 }
 
-unsigned int get_tag(std::uint32_t address) {
-    return address >> log2(numBytes) >> log2(Cache::numSets);
+unsigned int Cache::get_tag(std::uint32_t address) {
+    return address >> ((unsigned) log2(numBytes)) >> ((unsigned) log2(numSets));
 }
 
-unsigned int get_index(std::uint32_t address) {
-    int set_mask = numSets - 1;
-    return (address >> blockBits) & set_mask;
+unsigned int Cache::get_index(std::uint32_t address) {
+    return (address >> ((unsigned) log2(numBytes))) & (numSets - 1);
+}
+
+bool Cache::find_hit(unsigned int index, unsigned int tag) {
+    if (sets[index].slot_tag_map.find(tag) != sets[index].slot_tag_map.end()) {
+        return true;
+    }
+    return false;
 }
 
 void Cache::runTrace(char instruction, uint32_t address)  {
@@ -40,7 +46,118 @@ void Cache::runTrace(char instruction, uint32_t address)  {
     }
 }
 
+void Cache::load(uint32_t address) {
+    unsigned int index = get_index(address);
+    unsigned int tag = get_tag(address);
 
+    total_loads++;
+    total_cycles++;
+
+    // check for load hit/miss
+    if (find_hit(index, tag)) {
+        load_hits++;
+
+        if (lru_fifo) { // move the least recently accessed slot (first slot of the block) to the end since it was just accessed
+            Set &s = sets[index];
+            Slot slot = *s.slot_tag_map[tag];
+            s.slots.erase(s.slot_tag_map[tag]);
+            s.slots.push_back(slot);
+            s.slot_tag_map[tag] = --s.slots.end();
+        }
+
+    } else { // load was a miss
+        load_misses++;
+        add_slot(index, tag); // if load misses, add the slot to the cache
+    }
+}
+
+void Cache::store(uint32_t address) {
+    unsigned index = get_index(address);
+    unsigned tag = get_tag(address);
+
+    total_stores++;
+    total_cycles++;
+
+    if (!allocate_or_no) { // store for no-write-allocate does not modify the cache
+        
+        // check for store hit/miss
+        if (find_hit(index, tag)) {
+
+            // if is lru
+            if (lru_fifo) {
+                Set &s = sets[index];
+                Slot slot = *s.slot_tag_map[tag];
+                s.slots.erase(s.slot_tag_map[tag]);
+                s.slots.push_back(slot);
+                s.slot_tag_map[tag] = --s.slots.end();
+            }
+
+            store_hits++;
+
+        } else { // store is a miss
+            store_misses++;
+        }
+
+    } else { // store for write-allocate, block is brought into cache before the store
+
+        // check for store hit/miss
+        if (find_hit(index, tag)) {
+
+            // if is lru
+            if (lru_fifo) {
+                Set &s = sets[index];
+                Slot slot = *s.slot_tag_map[tag];
+                s.slots.erase(s.slot_tag_map[tag]);
+                s.slots.push_back(slot);
+                s.slot_tag_map[tag] = --s.slots.end();
+            }
+
+            store_hits++;
+
+        } else { // store is a miss
+            store_misses++;
+            add_slot(index, tag);
+        }
+
+        if (!through_or_back) { // if is write-back, block is marked dirty
+            Set &s = sets[index];
+            s.slot_tag_map[tag]->dirty = true;
+        }
+    }
+    if (through_or_back) { // if is write-through, store writes to both the cache and memory
+        total_cycles += 100; 
+    }
+}
+
+void Cache::add_slot(unsigned int index, unsigned int tag) {
+    Set &s = sets[index];
+
+    // check if the slot is full
+    if (s.slots.size() == (size_t) numBlocks) { // slot is full
+        s.slot_tag_map.erase(s.slot_tag_map.find(s.slots.front().tag)); // remove the evicted slot from the map
+        if (s.slots.front().dirty) {
+            total_cycles += (numBytes/4) * 100;
+        }
+        s.slots.pop_front(); // evict the least recently used slot from the block
+    }
+
+    Slot slot;
+    slot.tag = tag;
+
+    s.slots.push_back(slot);
+    s.slot_tag_map[tag] = --s.slots.end();
+    total_cycles += (numBytes/4) * 100;
+}
+
+void Cache::print_statistics() {
+    std::cout << "Total loads: " << total_loads << "\n";
+    std::cout << "Total stores: " << total_stores << "\n";
+    std::cout << "Load hits: " << load_hits << "\n";
+    std::cout << "Load misses: " << load_misses << "\n";
+    std::cout << "Store hits: " << store_hits << "\n";  
+    std::cout << "Store misses: " << store_misses << "\n";
+    std::cout << "Total cycles: " << total_cycles << std::endl;
+}
 
 void checkArgs(int argc, char* argv[]) {
     checkArgc(argc);
@@ -172,14 +289,4 @@ void checkEviction(std::string arg2, std::string arg6) {
             exit(8); 
         }
     }
-}
-
-std::uint32_t get_tag(std::uint32_t address, int numSets, int blockBits) {
-    int setBits = log(numSets)/log(2);
-    return address >> setBits + blockBits;
-}
-
-std::uint32_t get_set(std::uint32_t address,int numSets, int blockBits) {
-    int set_mask = numSets - 1;
-    return (address >> blockBits) & set_mask;
 }
