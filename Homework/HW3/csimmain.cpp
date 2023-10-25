@@ -1,4 +1,11 @@
+#include <fstream>
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <isstream>
 #include "csimfuncs.h"
+
+using namespace std;
 
 int main(int argc, char* argv[]) {
     // Check if arguments are valid
@@ -7,6 +14,18 @@ int main(int argc, char* argv[]) {
     // Initialize cache
     Cache cache(argv); 
     
+    string line;
+    char operation;
+    uint32_t address;
+    while (getline(cin, line)){
+        istringstream iss(line);           // Convert buffer string into a stringstream
+        vector<string> v; 
+        string word;   
+        for (unsigned i = 0; i < 3; i++) {       // Divide each line into 3 words
+            iss >> word; 
+            v.push_back(word);                   // Store each word in a vector 
+        }
+    }
     std::string fileName;
     std::cin >> fileName; 
     std::ifstream traceFile(fileName);  
