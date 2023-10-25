@@ -43,7 +43,7 @@ class Cache {
     unsigned int store_misses = 0;
     unsigned int total_cycles = 0;
 
-    std::vector<Sets> sets;
+    std::vector<Set> sets;
 
     Cache(char* parameters[]);
 
@@ -52,7 +52,7 @@ class Cache {
 
     bool find_hit(unsigned index, unsigned tag);
 
-}
+};
 
 // Checks if the arguments are valid
 void checkArgs(int argc, char* argv[]);
