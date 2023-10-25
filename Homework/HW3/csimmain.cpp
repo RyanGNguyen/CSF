@@ -1,35 +1,11 @@
-#include <sstream>
-#include <chrono>
-#include <ctime>    
-
 #include "csimfuncs.h"
 
-unsigned int total_loads = 0;
-unsigned int total_stores = 0;
-unsigned int load_hits = 0;
-unsigned int load_misses = 0;
-unsigned int store_hits = 0;
-unsigned int store_misses = 0;
-unsigned int total_cycles = 0;
-
-std::time_t const start_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()); 
-
 int main(int argc, char* argv[]) {
-    //Check if arguments are valid
+    // Check if arguments are valid
     checkArgs(argc, argv); 
 
-    unsigned numSets = std::stoul(argv[1], NULL, 10); 
-    unsigned numBlocks = std::stoul(argv[2], NULL, 10);
-    unsigned numBytes = std::stoul(argv[3], NULL, 10);
-    std::string writeAlloc = argv[4];
-    std::string writeThrough = argv[5];
-    std::string eviction = argv[6];
-
-    Cache cache;                                   // Initialize cache 
-    cache.sets.resize(numSets);
-    for (unsigned i = 0; i < numSets; i++) {
-        cache.sets[i].slots.resize(numBlocks);
-    }
+    // Initialize cache
+    Cache cache(argv); 
     
     std::string fileName;
     std::cin >> fileName; 
