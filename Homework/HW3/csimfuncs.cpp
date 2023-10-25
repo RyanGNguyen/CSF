@@ -1,18 +1,9 @@
-#include <iostream>
-#include <stdio.h>
-#include <string.h>
-#include <cmath>
-#include <list>
-#include <vector>
-#include <map>
 #include "csimfuncs.h"
 
-using namespace std;
-
 Cache::Cache(char* parameters[]) {
-    numSets = stoul(parameters[1]);
-    numBlocks = stoul(parameters[2]);
-    numBytes = stoul(parameters[3]);
+    numSets = std::stoul(parameters[1]);
+    numBlocks = std::stoul(parameters[2]);
+    numBytes = std::stoul(parameters[3]);
     allocate_or_no = strcmp(parameters[4], "write-allocate") == 0 ? true : false;
     through_or_back = strcmp(parameters[5], "write-through") == 0 ? true : false;
     lru_fifo = strcmp(parameters[6], "lru") == 0 ? true : false;
@@ -38,7 +29,7 @@ bool Cache::find_hit(unsigned int index, unsigned int tag) {
     return false;
 }
 
-void Cache::runTrace(char instruction, uint32_t address)  {
+void Cache::runTrace(char instruction, std::uint32_t address)  {
     if (instruction == 'l') {
         load(address);
     } else {
@@ -46,7 +37,7 @@ void Cache::runTrace(char instruction, uint32_t address)  {
     }
 }
 
-void Cache::load(uint32_t address) {
+void Cache::load(std::uint32_t address) {
     unsigned int index = get_index(address);
     unsigned int tag = get_tag(address);
 
@@ -71,7 +62,7 @@ void Cache::load(uint32_t address) {
     }
 }
 
-void Cache::store(uint32_t address) {
+void Cache::store(std::uint32_t address) {
     unsigned index = get_index(address);
     unsigned tag = get_tag(address);
 
@@ -170,7 +161,7 @@ void checkArgs(int argc, char* argv[]) {
     checkEviction(argv[2], argv[6]); 
 }
 
-void checkArgc(unsigned argc) {
+void checkArgc(unsigned int argc) {
     if (argc != 7) {
         std::cerr << "Incorrect number of arguments" << std::endl;
         exit(1); 

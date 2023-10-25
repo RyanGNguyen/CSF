@@ -5,8 +5,6 @@
 #include <isstream>
 #include "csimfuncs.h"
 
-using namespace std;
-
 int main(int argc, char* argv[]) {
     // Check if arguments are valid
     checkArgs(argc, argv); 
@@ -14,7 +12,7 @@ int main(int argc, char* argv[]) {
     // Initialize cache
     Cache cache(argv); 
     
-    string line;
+    std::string line;
     while (getline(cin, line)){
         istringstream iss(line);               // Convert each line into a stringstream
         vector<string> v; 

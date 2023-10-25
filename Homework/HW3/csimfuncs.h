@@ -1,35 +1,25 @@
 #ifndef CSIMFUNCS_H
 #define CSIMFUNCS_H
 
-#include <cstdlib>
-#include <cstdint>
 #include <iostream>
-#include <fstream>
+#include <cstdint>
+#include <cstdlib>
 #include <string>
-#include <vector>
+#include <cstring> 
 #include <cmath>
 #include <list>
+#include <vector>
 #include <map>
 
 struct Slot {
   unsigned tag;
   bool dirty = false; 
 };
-/* 
-struct Set {
-  std::vector<Slot> slots;
-};
-*/
 
 struct Set {
     std::list<Slot> slots; // list of all slots in a set
     std::map<unsigned, std::list<Slot>::iterator> slot_tag_map; // map of tag to iterator of a slot
 };
-/*
-struct Cache {
-  std::vector<Set> sets;
-};
-*/
 
 class Cache {
   public:
@@ -57,9 +47,9 @@ class Cache {
 
     bool find_hit(unsigned int index, unsigned int tag);
 
-    void runTrace(char instruction, uint32_t address);
-    void load(uint32_t address);
-    void store(uint32_t address);
+    void runTrace(char instruction, std::uint32_t address);
+    void load(std::uint32_t address);
+    void store(std::uint32_t address);
     void add_slot(unsigned int index, unsigned int tag);
     void print_statistics();
 };
@@ -68,7 +58,7 @@ class Cache {
 void checkArgs(int argc, char* argv[]);
 
 // Check for correct number of arguments
-void checkArgc(unsigned argc);
+void checkArgc(unsigned int argc);
     
 // Check if number of sets is valid
 void checkNumSets(std::string arg1);
