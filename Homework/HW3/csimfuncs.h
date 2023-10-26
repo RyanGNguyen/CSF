@@ -42,14 +42,14 @@ class Cache {
     unsigned int store_misses = 0;
     unsigned int total_cycles = 0;
 
-    vector<Set> sets;
+    std::vector<Set> sets;
 
     Cache(char* parameters[]);
 
-    unsigned int get_tag(uint32_t address, unsigned byteBits, unsigned setBits);
-    unsigned int get_index(uint32_t address, unsigned byteBits);
-    void load(uint32_t address, unsigned byteBits, unsigned setBits);
-    void store(uint32_t address, unsigned byteBits, unsigned setBits);
+    unsigned int get_tag(std::uint32_t address, unsigned byteBits, unsigned setBits);
+    unsigned int get_index(std::uint32_t address, unsigned byteBits);
+    void load(std::uint32_t address, unsigned byteBits, unsigned setBits);
+    void store(std::uint32_t address, unsigned byteBits, unsigned setBits);
     void lru_Evict(unsigned int index, unsigned int tag);
     void add_slot(unsigned int index, unsigned int tag);
     void print_statistics();
