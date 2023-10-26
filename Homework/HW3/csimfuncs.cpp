@@ -14,41 +14,18 @@ Cache::Cache(char* parameters[]) {
     }
 }
 
-unsigned int Cache::get_tag(std::uint32_t address) {
-<<<<<<< HEAD
-    return address >> (((unsigned) log2(numBytes)) + ((unsigned) log2(numSets)));
+unsigned int Cache::get_tag(std::uint32_t address, unsigned byteBits, unsigned setBits) {
+    return address >> byteBits + setBits;
 }
 
-unsigned int Cache::get_index(std::uint32_t address) {
-    return (address >> (((unsigned) log2(numBytes))) & (numSets - 1));
-}
-
-bool Cache::find_hit(unsigned int index, unsigned int tag) {
-    if (sets[index].slot_tag_map.find(tag) != sets[index].slot_tag_map.end()) {
-        return true;
-    }
-    return false;
-}
-
-void Cache::runTrace(std::string instruction, std::uint32_t address)  {
-    if (instruction.compare("l") == 0) {
-        load(address);
-    } else {
-        store(address);
-    }
-=======
-    return address >> ((unsigned) log2(numBytes) + (unsigned) log2(numSets));
-}
-
-unsigned int Cache::get_index(std::uint32_t address) {
+unsigned int Cache::get_index(std::uint32_t address, unsigned byteBits) {
     unsigned maskSet = numSets - 1;
-    return (address >> ((unsigned) log2(numBytes))) & maskSet;
->>>>>>> 3e3e64518963148cbbbc835e2417cb12af433a1d
+    return (address >> byteBits) & maskSet;
 }
 
-void Cache::load(std::uint32_t address) {
-    unsigned int index = get_index(address);
-    unsigned int tag = get_tag(address);
+void Cache::load(std::uint32_t address, unsigned byteBits, unsigned setBits) {
+    unsigned int index = get_index(address, byteBits);
+    unsigned int tag = get_tag(address, byteBits, setBits);
 
     total_loads++;
     total_cycles++;
@@ -65,9 +42,9 @@ void Cache::load(std::uint32_t address) {
     }
 }
 
-void Cache::store(std::uint32_t address) {
-    unsigned index = get_index(address);
-    unsigned tag = get_tag(address);
+void Cache::store(std::uint32_t address, unsigned byteBits, unsigned setBits) {
+    unsigned index = get_index(address, byteBits);
+    unsigned tag = get_tag(address, byteBits, setBits);
 
     total_stores++;
     total_cycles++;
