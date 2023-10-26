@@ -8,13 +8,14 @@ Cache::Cache(char* parameters[]) {
     through_or_back = strcmp(parameters[5], "write-through") == 0 ? true : false;
     lru_fifo = strcmp(parameters[6], "lru") == 0 ? true : false;
 
-    for (int i = 0; i < numSets; i++) {
+    for (unsigned i = 0; i < numSets; i++) {
         Set set;
         sets.push_back(set);
     }
 }
 
 unsigned int Cache::get_tag(std::uint32_t address) {
+<<<<<<< HEAD
     return address >> (((unsigned) log2(numBytes)) + ((unsigned) log2(numSets)));
 }
 
@@ -35,6 +36,14 @@ void Cache::runTrace(std::string instruction, std::uint32_t address)  {
     } else {
         store(address);
     }
+=======
+    return address >> ((unsigned) log2(numBytes) + (unsigned) log2(numSets));
+}
+
+unsigned int Cache::get_index(std::uint32_t address) {
+    unsigned maskSet = numSets - 1;
+    return (address >> ((unsigned) log2(numBytes))) & maskSet;
+>>>>>>> 3e3e64518963148cbbbc835e2417cb12af433a1d
 }
 
 void Cache::load(std::uint32_t address) {
@@ -45,18 +54,12 @@ void Cache::load(std::uint32_t address) {
     total_cycles++;
 
     // check for load hit/miss
-    if (find_hit(index, tag)) {
+    if (sets[index].slot_tag_map.find(tag) != sets[index].slot_tag_map.end()) {
         load_hits++;
-
-        if (lru_fifo) { // move the least recently accessed slot (first slot of the block) to the end since it was just accessed
-            Set &s = sets[index];
-            Slot slot = *s.slot_tag_map[tag];
-            s.slots.erase(s.slot_tag_map[tag]);
-            s.slots.push_back(slot);
-            s.slot_tag_map[tag] = --s.slots.end();
+        if (lru_fifo) { // move the least recently accessed (first) slot to the end since it was just accessed
+            lru_Evict(index, tag);
         }
-
-    } else { // load was a miss
+    } else { 
         load_misses++;
         add_slot(index, tag); // if load misses, add the slot to the cache
     }
@@ -70,41 +73,24 @@ void Cache::store(std::uint32_t address) {
     total_cycles++;
 
     if (!allocate_or_no) { // store for no-write-allocate does not modify the cache
-        
         // check for store hit/miss
-        if (find_hit(index, tag)) {
-
-            // if is lru
+        if (sets[index].slot_tag_map.find(tag) != sets[index].slot_tag_map.end()) {
             if (lru_fifo) {
-                Set &s = sets[index];
-                Slot slot = *s.slot_tag_map[tag];
-                s.slots.erase(s.slot_tag_map[tag]);
-                s.slots.push_back(slot);
-                s.slot_tag_map[tag] = --s.slots.end();
+                lru_Evict(index, tag);
             }
-
             store_hits++;
-
-        } else { // store is a miss
+        } else { 
             store_misses++;
         }
 
     } else { // store for write-allocate, block is brought into cache before the store
-
         // check for store hit/miss
-        if (find_hit(index, tag)) {
-
+        if (sets[index].slot_tag_map.find(tag) != sets[index].slot_tag_map.end()) {
             // if is lru
             if (lru_fifo) {
-                Set &s = sets[index];
-                Slot slot = *s.slot_tag_map[tag];
-                s.slots.erase(s.slot_tag_map[tag]);
-                s.slots.push_back(slot);
-                s.slot_tag_map[tag] = --s.slots.end();
+                lru_Evict(index, tag);
             }
-
             store_hits++;
-
         } else { // store is a miss
             store_misses++;
             add_slot(index, tag);
@@ -115,9 +101,18 @@ void Cache::store(std::uint32_t address) {
             s.slot_tag_map[tag]->dirty = true;
         }
     }
+
     if (through_or_back) { // if is write-through, store writes to both the cache and memory
         total_cycles += 100; 
     }
+}
+
+void Cache::lru_Evict(unsigned int index, unsigned int tag) {
+    Set &s = sets[index];
+    Slot slot = *s.slot_tag_map[tag];
+    s.slots.erase(s.slot_tag_map[tag]);
+    s.slots.push_back(slot);
+    s.slot_tag_map[tag] = --s.slots.end();
 }
 
 void Cache::add_slot(unsigned int index, unsigned int tag) {
@@ -125,7 +120,7 @@ void Cache::add_slot(unsigned int index, unsigned int tag) {
 
     // check if the slot is full
     if (s.slots.size() == (size_t) numBlocks) { // slot is full
-        s.slot_tag_map.erase(s.slot_tag_map.find(s.slots.front().tag)); // remove the evicted slot from the map
+        s.slot_tag_map.erase(s.slot_tag_map.find(s.slots.front().tag)); // remove the evicted slot
         if (s.slots.front().dirty) {
             total_cycles += (numBytes/4) * 100;
         }
@@ -134,7 +129,6 @@ void Cache::add_slot(unsigned int index, unsigned int tag) {
 
     Slot slot;
     slot.tag = tag;
-
     s.slots.push_back(slot);
     s.slot_tag_map[tag] = --s.slots.end();
     total_cycles += (numBytes/4) * 100;
@@ -158,7 +152,7 @@ void checkArgs(int argc, char* argv[]) {
     checkWriteAlloc(argv[4]);
     checkWriteThrough(argv[5]);
     checkWriteBackAndNoAlloc(argv[4], argv[5]);
-    checkEviction(argv[2], argv[6]); 
+    checkEviction(argv[6]); 
 }
 
 void checkArgc(unsigned int argc) {
@@ -267,17 +261,10 @@ void checkWriteBackAndNoAlloc(std::string arg4, std::string arg5) {
     }
 }
 
-void checkEviction(std::string arg2, std::string arg6) {
-    // Check if eviction policy is called for a direct-mapped cache
-    unsigned numBlocks = std::stoul(arg2, NULL, 10);
-    if (numBlocks == 1) {
-        std::cerr << "Eviction policies are invalid for a direct-mapped cache" << std::endl;
+void checkEviction(std::string arg6) {
+    // Check if eviction policy is valid
+    if (arg6.compare("lru") != 0 && arg6.compare("fifo") != 0) {
+        std::cerr << "Invalid argument for eviction policy" << std::endl;
         exit(8); 
-    } else {
-        // Check if eviction policy is valid
-        if (arg6.compare("lru") != 0 && arg6.compare("fifo") != 0) {
-            std::cerr << "Invalid argument for eviction policy" << std::endl;
-            exit(8); 
-        }
     }
 }
