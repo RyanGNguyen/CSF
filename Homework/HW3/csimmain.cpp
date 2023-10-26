@@ -17,10 +17,12 @@ int main(int argc, char* argv[]) {
             v.push_back(word);                   // Store each word in a vector 
         }
         std::uint32_t address = std::stoul(v[1], NULL, 16);  // Convert hex address to unsigned int
+        unsigned byteBits = log2(cache.numBytes);                    // Calculate number of bits for byte offset
+        unsigned setBits = log2(cache.numSets);                      // Calculate number of bits for set index
         if (v[0].compare("l") == 0) { 
-            cache.load(address);                          // Load address
+            cache.load(address, byteBits, setBits);                          // Load address
         } else {
-            cache.store(address);                         // Store address
+            cache.store(address, byteBits, setBits);                         // Store address
         }
     }
     cache.print_statistics();                   // Print statistics
