@@ -19,7 +19,7 @@ unsigned int Cache::get_tag(std::uint32_t address) {
 }
 
 unsigned int Cache::get_index(std::uint32_t address) {
-    return (address >> ((unsigned) log2(numBytes))) & (numSets - 1);
+    return (address >> (((unsigned) log2(numBytes))) & (numSets - 1));
 }
 
 bool Cache::find_hit(unsigned int index, unsigned int tag) {
