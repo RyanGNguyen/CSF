@@ -14,13 +14,13 @@
 #include <map>
 
 struct Slot {
-  unsigned tag;
-  bool dirty = false; 
+  unsigned tag;          
+  bool dirty = false;  
 };
 
 struct Set {
     std::list<Slot> slots; // list of all slots in a set
-    std::map<unsigned, std::list<Slot>::iterator> slot_tag_map; // map of tag to iterator of a slot
+    std::map<unsigned, std::list<Slot>::iterator> slot_tag_map; // tag to slot iterator map for easy search
 };
 
 class Cache {
@@ -28,8 +28,8 @@ class Cache {
     unsigned int numSets;
     unsigned int numBlocks;
     unsigned int numBytes;
-    bool allocate_or_no; // true = write allocate, false = no write allocate
-    bool through_or_back; // true = write through, false = write back
+    bool allocate_or_no; // true = write-allocate, false = no-write-allocate
+    bool through_or_back; // true = write-through, false = write-back
     bool lru_fifo; // true = lru, false = fifo
 
     unsigned int total_loads = 0;
@@ -46,12 +46,9 @@ class Cache {
 
     unsigned int get_tag(std::uint32_t address);
     unsigned int get_index(std::uint32_t address);
-
-    bool find_hit(unsigned int index, unsigned int tag);
-
-    void runTrace(std::string instruction, std::uint32_t address);
     void load(std::uint32_t address);
     void store(std::uint32_t address);
+    void lru_Evict(unsigned int index, unsigned int tag);
     void add_slot(unsigned int index, unsigned int tag);
     void print_statistics();
 };

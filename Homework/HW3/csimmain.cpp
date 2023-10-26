@@ -16,7 +16,12 @@ int main(int argc, char* argv[]) {
             iss >> word; 
             v.push_back(word);                   // Store each word in a vector 
         }
-        cache.runTrace(v[0], std::stoul(v[1], NULL, 16));       // Run trace
+        std::uint32_t address = std::stoul(v[1], NULL, 16);  // Convert hex address to unsigned int
+        if (v[0].compare("l") == 0) { 
+            cache.load(address);                          // Load address
+        } else {
+            cache.store(address);                         // Store address
+        }
     }
     cache.print_statistics();                   // Print statistics
 
