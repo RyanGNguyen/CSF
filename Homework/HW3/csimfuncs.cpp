@@ -15,7 +15,7 @@ Cache::Cache(char* parameters[]) {
 }
 
 unsigned int Cache::get_tag(std::uint32_t address) {
-    return address >> ((unsigned) log2(numBytes)) >> ((unsigned) log2(numSets));
+    return address >> (((unsigned) log2(numBytes)) + ((unsigned) log2(numSets)));
 }
 
 unsigned int Cache::get_index(std::uint32_t address) {
