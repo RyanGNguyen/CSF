@@ -19,8 +19,8 @@ unsigned int Cache::get_tag(std::uint32_t address, unsigned byteBits, unsigned s
 }
 
 unsigned int Cache::get_index(std::uint32_t address, unsigned byteBits) {
-    unsigned maskSet = numSets - 1;
-    return (address >> byteBits) & maskSet;
+    unsigned setMask = numSets - 1;
+    return (address >> byteBits) & setMask;
 }
 
 void Cache::load(std::uint32_t address, unsigned byteBits, unsigned setBits) {
