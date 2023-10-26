@@ -8,7 +8,7 @@ Cache::Cache(char* parameters[]) {
     through_or_back = strcmp(parameters[5], "write-through") == 0 ? true : false;
     lru_fifo = strcmp(parameters[6], "lru") == 0 ? true : false;
 
-    for (int i = 0; i < numSets; i++) {
+    for (unsigned i = 0; i < numSets; i++) {
         Set set;
         sets.push_back(set);
     }
@@ -158,7 +158,7 @@ void checkArgs(int argc, char* argv[]) {
     checkWriteAlloc(argv[4]);
     checkWriteThrough(argv[5]);
     checkWriteBackAndNoAlloc(argv[4], argv[5]);
-    checkEviction(argv[2], argv[6]); 
+    checkEviction(argv[6]); 
 }
 
 void checkArgc(unsigned int argc) {
@@ -267,17 +267,10 @@ void checkWriteBackAndNoAlloc(std::string arg4, std::string arg5) {
     }
 }
 
-void checkEviction(std::string arg2, std::string arg6) {
-    // Check if eviction policy is called for a direct-mapped cache
-    unsigned numBlocks = std::stoul(arg2, NULL, 10);
-    if (numBlocks == 1) {
-        std::cerr << "Eviction policies are invalid for a direct-mapped cache" << std::endl;
+void checkEviction(std::string arg6) {
+    // Check if eviction policy is valid
+    if (arg6.compare("lru") != 0 && arg6.compare("fifo") != 0) {
+        std::cerr << "Invalid argument for eviction policy" << std::endl;
         exit(8); 
-    } else {
-        // Check if eviction policy is valid
-        if (arg6.compare("lru") != 0 && arg6.compare("fifo") != 0) {
-            std::cerr << "Invalid argument for eviction policy" << std::endl;
-            exit(8); 
-        }
     }
 }

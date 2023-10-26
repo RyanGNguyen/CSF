@@ -81,6 +81,6 @@ void checkWriteThrough(std::string arg5);
 void checkWriteBackAndNoAlloc(std::string arg4, std::string arg5);
 
 // Check eviction policy
-void checkEviction(std::string arg2, std::string arg6);
+void checkEviction(std::string arg6);
 
 #endif // CSIMFUNCS_H
