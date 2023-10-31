@@ -15,7 +15,7 @@ Cache::Cache(char* parameters[]) {
 }
 
 unsigned int Cache::get_tag(std::uint32_t address, unsigned byteBits, unsigned setBits) {
-    return address >> byteBits + setBits;
+    return address >> (byteBits + setBits);
 }
 
 unsigned int Cache::get_index(std::uint32_t address, unsigned byteBits) {
