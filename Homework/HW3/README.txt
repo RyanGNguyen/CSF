@@ -29,4 +29,9 @@ Collaborators:
     Ryan Nguyen (rnguye14)
      - 
     Andy Tang (atang24)
-     - 
+     - Makefile
+     - Cache class
+     - get_tag
+     - get_index
+     - load
+     - store
