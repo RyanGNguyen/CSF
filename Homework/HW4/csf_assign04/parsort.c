@@ -71,26 +71,43 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   size_t mid = begin + size/2;
 
   // TODO: parallelize the recursive sorting
-  pid_t pid = fork(); 
-  merge_sort(arr, begin, mid, threshold);
-  if (pid == -1) {
-    // fork failed to start a new process
-    // handle the error and exit
-    fatal("fork failed to start a new process"); 
-  } else if (pid == 0) { 
-      // child process
-      exit(do_child_work());
-      // everything past here is now unreachable in the child
-  }
-  // if pid is not 0, we are in the parent process
-  // WARNING, if the child process path can get here, things will quickly break very badly
 
-  pid_t pid = fork(); 
-  merge_sort(arr, mid, end, threshold);
-  if (pid == -1) {
-    fatal("fork failed to start a new process"); 
-  } else if (pid == 0) { 
-      exit(do_child_work());
+  pid_t pid1 = fork();
+  switch (pid1) {
+    case -1:  // fork failed to start a new process
+      fatal("fork failed to start a new process"); 
+      break;
+    case 0:   // if pid is 0, we are in the child process
+      int retcode = do_child_work(); // merge_sort(arr, begin, mid, threshold); 
+      exit(retcode);
+      break;
+    default:  // if pid is neither option, we are in the parent process
+      int wstatus;
+      pid_t actual_pid = waitpid(pid1, &wstatus, 0); // blocks until the child process completes
+      if (actual_pid == -1) {
+        fatal("waitpid failure"); // handle waitpid failure
+      }
+      child_status(wstatus); // check the exit status of the child process
+      break;
+  }
+
+  pid_t pid2 = fork();
+  switch (pid2) {
+    case -1:  // fork failed to start a new process
+      fatal("fork failed to start a new process"); 
+      break;
+    case 0:   // if pid is 0, we are in the child process
+      int retcode = do_child_work(); // merge(arr, mid, end, threshold); 
+      exit(retcode);
+      break;
+    default:  // if pid is neither option, we are in the parent process
+      int wstatus;
+      pid_t actual_pid = waitpid(pid2, &wstatus, 0); // blocks until the child process completes
+      if (actual_pid == -1) {
+        fatal("waitpid failure"); // handle waitpid failure
+      }
+      child_status(wstatus); // check the exit status of the child process
+      break;
   }
 
   // allocate temp array now, so we can avoid unnecessary work
@@ -115,6 +132,15 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
 
 int do_child_work() {
   return 1; 
+}
+
+void child_status(int wstatus) {
+  if (!WIFEXITED(wstatus)) {
+    fatal("subprocess crashed, was interrupted, or did not exit normally");
+  }
+  if (WEXITSTATUS(wstatus) != 0) {
+    fatal("subprocess returned a non-zero exit code");
+  }
 }
 
 int main(int argc, char **argv) {
