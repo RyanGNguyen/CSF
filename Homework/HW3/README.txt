@@ -35,3 +35,5 @@ Collaborators:
      - get_index
      - load
      - store
+
+    Program structure and logic were discussed together and implemented both together and separately.
