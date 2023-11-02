@@ -91,10 +91,4 @@ Collaborators:
      - Experiment
 
     Andy Tang (atang24)
-     - Cache, Set, and Slot data structures
-     - load 
-     - store
-     - lru_evict
-     - add slot
-     
-
+     - 
