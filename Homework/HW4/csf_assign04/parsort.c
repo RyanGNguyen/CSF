@@ -78,8 +78,8 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
       fatal("fork failed to start a new process"); 
       break;
     case 0:   // if pid is 0, we are in the child process
-      int retcode = do_child_work(); // merge_sort(arr, begin, mid, threshold); 
-      exit(retcode);
+      merge_sort(arr, begin, mid, threshold); 
+      exit(0);
       break;
     default:  // if pid is neither option, we are in the parent process
       int wstatus;
@@ -97,8 +97,8 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
       fatal("fork failed to start a new process"); 
       break;
     case 0:   // if pid is 0, we are in the child process
-      int retcode = do_child_work(); // merge(arr, mid, end, threshold); 
-      exit(retcode);
+      merge(arr, mid, end, threshold); 
+      exit(0);
       break;
     default:  // if pid is neither option, we are in the parent process
       int wstatus;
