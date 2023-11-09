@@ -78,20 +78,19 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   } else if (pid == 0) { // if pid is 0, we are in the child process
     merge_sort(arr, begin, mid, threshold); 
     exit(0);
-  } else { // parent process
-    int wstatus;
-    pid_t actual_pid = waitpid(pid, &wstatus, 0); // blocks until the child process completes
-    if (actual_pid == -1) {
-      fatal("waitpid failure"); // handle waitpid failure
+  }// parent process
+  int wstatus;
+  pid_t actual_pid = waitpid(pid, &wstatus, 0); // blocks until the child process completes
+  if (actual_pid == -1) {
+    fatal("waitpid failure"); // handle waitpid failure
     }
-    if (!WIFEXITED(wstatus)) {
-      fatal("subprocess crashed, was interrupted, or did not exit normally");
-    }
-    if (WEXITSTATUS(wstatus) != 0) {
-      fatal("subprocess returned a non-zero exit code");
-    }
-    merge_sort(arr, mid, end, threshold);
+  if (!WIFEXITED(wstatus)) {
+    fatal("subprocess crashed, was interrupted, or did not exit normally");
   }
+  if (WEXITSTATUS(wstatus) != 0) {
+    fatal("subprocess returned a non-zero exit code");
+  }
+  merge_sort(arr, mid, end, threshold);
 
   // allocate temp array now, so we can avoid unnecessary work
   // if the malloc fails
