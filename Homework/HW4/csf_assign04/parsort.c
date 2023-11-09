@@ -97,7 +97,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
       fatal("fork failed to start a new process"); 
       break;
     case 0:   // if pid is 0, we are in the child process
-      merge(arr, mid, end, threshold); 
+      merge_sort(arr, mid, end, threshold); 
       exit(0);
       break;
     default:  // if pid is neither option, we are in the parent process
@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
   size_t file_size_in_bytes = statbuf.st_size;
 
   // TODO: map the file into memory using mmap
-  int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0)
+  int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   // you should immediately close the file descriptor here since mmap maintains a separate
   // reference to the file and all open fds will gets duplicated to the children, which will
   // cause fd in-use-at-exit leaks.
