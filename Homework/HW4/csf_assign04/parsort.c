@@ -72,43 +72,25 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
 
   // TODO: parallelize the recursive sorting
 
-  pid_t pid1 = fork();
-  if (pid1 == -1) { // fork failed to start a new process
+  pid_t pid = fork();
+  if (pid == -1) { // fork failed to start a new process
     fatal("fork failed to start a new process");
-  } else if (pid1 == 0) { // if pid is 0, we are in the child process
+  } else if (pid == 0) { // if pid is 0, we are in the child process
     merge_sort(arr, begin, mid, threshold); 
     exit(0);
-  }
-  int wstatus1;
-  pid_t actual_pid1 = waitpid(pid1, &wstatus1, 0); // blocks until the child process completes
-  if (actual_pid1 == -1) {
-    fatal("waitpid failure"); // handle waitpid failure
-  }
-  if (!WIFEXITED(wstatus1)) {
-    fatal("subprocess crashed, was interrupted, or did not exit normally");
-  }
-  if (WEXITSTATUS(wstatus1) != 0) {
-    fatal("subprocess returned a non-zero exit code");
-  }
-
-
-  pid_t pid2 = fork();
-  if (pid2 == -1) { // fork failed to start a new process
-    fatal("fork failed to start a new process");
-  } else if (pid2 == 0) { // if pid is 0, we are in the child process
-    merge_sort(arr, mid, end, threshold); 
-    exit(0);
-  }
-  int wstatus2;
-  pid_t actual_pid2 = waitpid(pid2, &wstatus2, 0); // blocks until the child process completes
-  if (actual_pid2 == -1) {
-    fatal("waitpid failure"); // handle waitpid failure
-  }
-  if (!WIFEXITED(wstatus2)) {
-    fatal("subprocess crashed, was interrupted, or did not exit normally");
-  }
-  if (WEXITSTATUS(wstatus2) != 0) {
-    fatal("subprocess returned a non-zero exit code");
+  } else { // parent process
+    int wstatus;
+    pid_t actual_pid = waitpid(pid, &wstatus, 0); // blocks until the child process completes
+    if (actual_pid == -1) {
+      fatal("waitpid failure"); // handle waitpid failure
+    }
+    if (!WIFEXITED(wstatus)) {
+      fatal("subprocess crashed, was interrupted, or did not exit normally");
+    }
+    if (WEXITSTATUS(wstatus) != 0) {
+      fatal("subprocess returned a non-zero exit code");
+    }
+    merge_sort(arr, mid, end, threshold);
   }
 
   // allocate temp array now, so we can avoid unnecessary work
