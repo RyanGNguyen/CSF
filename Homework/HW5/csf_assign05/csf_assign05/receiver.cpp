@@ -21,12 +21,17 @@ int main(int argc, char **argv) {
   Connection conn;
 
   // TODO: connect to server
+  conn = Connection();
+  conn.connect(server_hostname, server_port);
 
   // TODO: send rlogin and join messages (expect a response from
   //       the server for each one)
+  conn.send(Message(TAG_RLOGIN, username));
+  conn.send(Message(TAG_JOIN, room_name));
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
+  
 
 
   return 0;

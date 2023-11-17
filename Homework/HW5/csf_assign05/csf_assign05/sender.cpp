@@ -13,17 +13,18 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  std::string server_hostname;
-  int server_port;
-  std::string username;
+  std::string server_hostname = argv[1];
+  int server_port = std::stoi(argv[2]);
+  std::string username = argv[3];
 
-  server_hostname = argv[1];
-  server_port = std::stoi(argv[2]);
-  username = argv[3];
+  Connection conn;
 
   // TODO: connect to server
+  conn = Connection();
+  conn.connect(server_hostname, server_port);
 
   // TODO: send slogin message
+  conn.send(Message(TAG_SLOGIN, username));
 
   // TODO: loop reading commands from user, sending messages to
   //       server as appropriate
