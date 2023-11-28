@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
   //       the server for each one)
   conn.send(Message(TAG_RLOGIN, username));
   conn.send(Message(TAG_JOIN, room_name));
+  Message reply;
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
@@ -40,15 +41,8 @@ int main(int argc, char **argv) {
         std::string sender = strtok_r(data, ":", &data);
         std::string message = strtok_r(data, ":", &data);
         std::cout << sender << ": " << message << "\n";
-      } else if (msg.tag == TAG_EMPTY) {
-        std::cout << "No messages available\n";
-      } else {
-        std::cerr << "Error: unexpected message from server\n";
-      }
-    } else {
-      std::cerr << "Error: could not receive message from server\n";
-      break;
-    }
+      } 
+    } 
   }
   return 0;
 }
