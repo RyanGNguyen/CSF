@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   Connection conn;
 
   // TODO: connect to server
-  conn = Connection();
+  Connection();
   conn.connect(server_hostname, server_port);
 
   // TODO: send slogin message

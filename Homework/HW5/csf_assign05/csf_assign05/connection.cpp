@@ -1,6 +1,8 @@
 #include <sstream>
 #include <cctype>
 #include <cassert>
+#include <iostream>
+#include <unistd.h>
 #include "csapp.h"
 #include "message.h"
 #include "connection.h"
@@ -33,7 +35,7 @@ void Connection::connect(const std::string &hostname, int port) {
 
 Connection::~Connection() {
   // TODO: close the socket if it is open
-  if Connection::is_open() {
+  if (Connection::is_open()) {
     Connection::close();
   }
 }
@@ -45,7 +47,7 @@ bool Connection::is_open() const {
 
 void Connection::close() {
   // TODO: close the connection if it is open
-  close(m_fd);
+  Close(m_fd);
 }
 
 bool Connection::send(const Message &msg) {
@@ -58,7 +60,7 @@ bool Connection::send(const Message &msg) {
   
   // Unsure
   Message reply;
-  if (Connection::receive(&reply)) { 
+  if (Connection::receive(reply)) { 
     if (reply.tag == TAG_ERR) {
       m_last_result = EOF_OR_ERROR;
       std::cerr << reply.data << "\n";
