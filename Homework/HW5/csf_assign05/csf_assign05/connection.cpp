@@ -57,6 +57,7 @@ bool Connection::send(const Message &msg) {
   rio_writen(m_fd, msg.tag.c_str(), msg.tag.length()); 
   rio_writen(m_fd, ":", 1);
   rio_writen(m_fd, msg.data.c_str(), msg.data.length());
+  rio_writen(m_fd, "\n", 1);
   
   // Unsure
   Message reply;
