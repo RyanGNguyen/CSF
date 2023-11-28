@@ -31,8 +31,24 @@ int main(int argc, char **argv) {
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
-  
-
-
+  while (true) {
+    Message msg;
+    if (conn.receive(msg)) {
+      if (msg.tag == TAG_DELIVERY) {
+        char *data = (char *) msg.data.c_str();
+        strtok_r(data, ":", &data);   // Room
+        std::string sender = strtok_r(data, ":", &data);
+        std::string message = strtok_r(data, ":", &data);
+        std::cout << sender << ": " << message << "\n";
+      } else if (msg.tag == TAG_EMPTY) {
+        std::cout << "No messages available\n";
+      } else {
+        std::cerr << "Error: unexpected message from server\n";
+      }
+    } else {
+      std::cerr << "Error: could not receive message from server\n";
+      break;
+    }
+  }
   return 0;
 }

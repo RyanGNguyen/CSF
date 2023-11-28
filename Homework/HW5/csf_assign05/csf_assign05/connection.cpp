@@ -25,6 +25,7 @@ void Connection::connect(const std::string &hostname, int port) {
     exit(EOF_OR_ERROR); 
   }
   m_fd = fd;
+  m_last_result = SUCCESS;
 
   // TODO: call rio_readinitb to initialize the rio_t object
   rio_readinitb(&m_fdbuf, fd);
@@ -55,13 +56,20 @@ bool Connection::send(const Message &msg) {
   rio_writen(m_fd, ":", 1);
   rio_writen(m_fd, msg.data.c_str(), msg.data.length());
   
-  //Unsure
-  if (Connection::receive(Message(TAG_OK, "client's request ran to completion.")))) {   
-    m_last_result = SUCCESS;
-    return true;
-  } else if (Connection::receive(Message(TAG_ERR, "client's request was not carried out.")))) {
-    m_last_result = EOF_OR_ERROR;
-    exit(EOF_OR_ERROR);
+  // Unsure
+  Message reply;
+  if (Connection::receive(&reply)) { 
+    if (reply.tag == TAG_ERR) {
+      m_last_result = EOF_OR_ERROR;
+      std::cerr << reply.tag << "\n";
+      if (msg.tag == TAG_SLOGIN or msg.tag == TAG_RLOGIN) {
+        exit(EOF_OR_ERROR);
+      }
+      return false;
+    } else {
+      m_last_result = SUCCESS;
+      return true;
+    }
   } else {
     m_last_result = EOF_OR_ERROR;
     return false;

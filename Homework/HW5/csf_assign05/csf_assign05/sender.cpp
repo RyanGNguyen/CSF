@@ -24,10 +24,31 @@ int main(int argc, char **argv) {
   conn.connect(server_hostname, server_port);
 
   // TODO: send slogin message
-  conn.send(Message(TAG_SLOGIN, username));
+  conn.send(Message(TAG_SLOGIN, username)); 
 
   // TODO: loop reading commands from user, sending messages to
   //       server as appropriate
-
+  while (true) {
+    std::string line;
+    std::getline(std::cin, line);
+    std::istringstream iss(line);
+    std::string command;
+    iss >> command; 
+    if (command == "/quit") {
+      if (conn.send(Message(TAG_QUIT, ""))) {
+        break;
+      }
+    } else if (command == "/join") {
+      std::string room_name;
+      iss >> room_name;
+      conn.send(Message(TAG_JOIN, room_name));
+    } else if (command == "/leave") {
+      std::string room_name;
+      iss >> room_name;
+      conn.send(Message(TAG_LEAVE, room_name));
+    } else {
+      std::cerr << "Error: invalid command\n";
+    }
+  }
   return 0;
 }
