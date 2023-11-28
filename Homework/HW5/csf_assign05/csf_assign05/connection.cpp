@@ -55,9 +55,9 @@ bool Connection::send(const Message &msg) {
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
   rio_writen(m_fd, msg.tag.c_str(), msg.tag.length()); 
-  rio_writen(m_fd, ':', 1);
+  rio_writen(m_fd, ":", 1);
   rio_writen(m_fd, msg.data.c_str(), msg.data.length());
-  rio_writen(m_fd, '\0', 1);
+  rio_writen(m_fd, "\0", 1);
   
   // Unsure
   Message reply;
