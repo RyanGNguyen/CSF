@@ -61,7 +61,7 @@ bool Connection::send(const Message &msg) {
   if (Connection::receive(&reply)) { 
     if (reply.tag == TAG_ERR) {
       m_last_result = EOF_OR_ERROR;
-      std::cerr << reply.tag << "\n";
+      std::cerr << reply.data << "\n";
       if (msg.tag == TAG_SLOGIN or msg.tag == TAG_RLOGIN) {
         exit(EOF_OR_ERROR);
       }

@@ -47,8 +47,10 @@ int main(int argc, char **argv) {
       iss >> room_name;
       conn.send(Message(TAG_LEAVE, room_name));
     } else {
-      std::cerr << "Error: invalid command\n";
-    }
+      std::string message;
+      std::getline(iss, message);
+      conn.send(Message(TAG_SENDALL, message));
+    } 
   }
   return 0;
 }
