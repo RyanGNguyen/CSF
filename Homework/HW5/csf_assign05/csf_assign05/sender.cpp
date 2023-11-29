@@ -21,9 +21,25 @@ int main(int argc, char **argv) {
 
   // TODO: connect to server
   conn.connect(server_hostname, server_port);
+  if (!conn.is_open()) {
+    std::cerr << "Error: Connection is not open.\n";
+    exit(1);
+  }
 
   // TODO: send slogin message
-  conn.send(Message(TAG_SLOGIN, username)); 
+  conn.send(Message(TAG_SLOGIN, ":" + username + "\n"));
+
+  Message slogin_ok;
+  conn.receive(slogin_ok);
+  if (slogin_ok.tag == TAG_ERR) {
+    std::cerr << slogin_ok.data;
+    exit(1);
+  } 
+
+  if (slogin_ok.tag != TAG_OK) {
+    std::cerr << "Error: Unexpected message from the server. No OK received.\n";
+    exit(1);
+  }
 
   // TODO: loop reading commands from user, sending messages to
   //       server as appropriate
