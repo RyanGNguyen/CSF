@@ -20,7 +20,6 @@ int main(int argc, char **argv) {
   Connection conn;
 
   // TODO: connect to server
-  Connection();
   conn.connect(server_hostname, server_port);
 
   // TODO: send slogin message
@@ -38,14 +37,13 @@ int main(int argc, char **argv) {
       if (conn.send(Message(TAG_QUIT, ""))) {
         break;
       }
+    } else if (command == "/leave") {
+      conn.send(Message(TAG_LEAVE, ""));
     } else if (command == "/join") {
       std::string room_name;
       iss >> room_name;
+      conn.send(Message(TAG_LEAVE, ""));
       conn.send(Message(TAG_JOIN, room_name));
-    } else if (command == "/leave") {
-      std::string room_name;
-      iss >> room_name;
-      conn.send(Message(TAG_LEAVE, room_name));
     } else {
       std::string message;
       std::getline(iss, message);

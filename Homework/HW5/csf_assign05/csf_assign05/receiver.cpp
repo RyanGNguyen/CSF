@@ -21,14 +21,14 @@ int main(int argc, char **argv) {
   Connection conn;
 
   // TODO: connect to server
-  Connection();
   conn.connect(server_hostname, server_port);
 
   // TODO: send rlogin and join messages (expect a response from
   //       the server for each one)
   conn.send(Message(TAG_RLOGIN, username));
-  conn.send(Message(TAG_JOIN, room_name));
-  Message reply;
+  if (!conn.send(Message(TAG_JOIN, room_name))) {
+    exit(1);
+  }
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
@@ -37,11 +37,11 @@ int main(int argc, char **argv) {
     if (conn.receive(msg)) {
       if (msg.tag == TAG_DELIVERY) {
         char *data = (char *) msg.data.c_str();
-        strtok_r(data, ":", &data);   // Room
-        std::string sender = strtok_r(data, ":", &data);
-        std::string message = strtok_r(data, ":", &data);
+        strtok_r(data, ":", &data);   
+        char *sender = strtok_r(data, ":", &data);
+        char *message = strtok_r(data, ":", &data);
         std::cout << sender << ": " << message << "\n";
-      } 
+      }
     } 
   }
   return 0;

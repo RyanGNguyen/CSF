@@ -57,7 +57,7 @@ bool Connection::send(const Message &msg) {
   rio_writen(m_fd, msg.tag.c_str(), msg.tag.length()); 
   rio_writen(m_fd, ":", 1);
   rio_writen(m_fd, msg.data.c_str(), msg.data.length());
-  rio_writen(m_fd, "\0", 1);
+  rio_writen(m_fd, "\n", 1);
   
   // Unsure
   Message reply;
@@ -83,13 +83,13 @@ bool Connection::receive(Message &msg) {
   // TODO: receive a message, storing its tag and data in msg
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
-  char buf[Message::MAX_LEN] = {'\0'};
+  char buf[Message::MAX_LEN];
   ssize_t n = rio_readlineb(&m_fdbuf, buf, Message::MAX_LEN);
   
   if (n > 0) {
     char* tag;
-    char* data = buf;
-    tag = strtok_r(data, ":", &data);
+    char* data;
+    tag = strtok_r(buf, ":", &data);
     if (tag == NULL || data == NULL) { 
       m_last_result = INVALID_MSG;
       return false;
