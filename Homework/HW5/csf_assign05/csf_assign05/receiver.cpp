@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   //       (which should be tagged with TAG_DELIVERY)
   while (true) {
     Message msg;
-    conn.receive(msg) 
+    conn.receive(msg); 
     if (msg.tag == TAG_DELIVERY) {
       char *data = (char *) msg.data.c_str();
       strtok_r(data, ":", &data);   

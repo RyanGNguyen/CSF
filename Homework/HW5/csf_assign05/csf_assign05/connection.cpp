@@ -55,7 +55,7 @@ bool Connection::send(const Message &msg) {
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
   std::string buffer = msg.tag + ":" + msg.data + "\n";
-  ssize_t n = (m_fd, buffer.c_str(), buffer.length()); 
+  ssize_t n = rio_writen(m_fd, buffer.c_str(), buffer.length()); 
   if (n == buffer.length()) {
     m_last_result = SUCCESS;
     return true;
