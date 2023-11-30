@@ -27,15 +27,13 @@ int main(int argc, char **argv) {
   }
 
   // TODO: send slogin message
-  conn.send(Message(TAG_SLOGIN, ":" + username + "\n"));
-
+  conn.send(Message(TAG_SLOGIN, username));
   Message slogin_ok;
   conn.receive(slogin_ok);
   if (slogin_ok.tag == TAG_ERR) {
     std::cerr << slogin_ok.data;
     exit(1);
   } 
-
   if (slogin_ok.tag != TAG_OK) {
     std::cerr << "Error: Unexpected message from the server. No OK received.\n";
     exit(1);
@@ -49,17 +47,37 @@ int main(int argc, char **argv) {
     std::istringstream iss(line);
     std::string command;
     iss >> command; 
-    if (command == "/quit") {
-      if (conn.send(Message(TAG_QUIT, ""))) {
-        break;
+    if (command == "/join") {
+      std::string room_name;
+      iss >> room_name;
+      conn.send(Message(TAG_JOIN, room_name));
+
+      Message join_ok;
+      if (conn.receive(join_ok)) {
+        if (join_ok.tag == TAG_ERR) {
+          std::cerr << join_ok.data;
+        }
+        if (slogin_ok.tag != TAG_OK) {
+          std::cerr << "Error: Unexpected message from the server. No OK received.\n";
+          exit(1);
+        }
       }
     } else if (command == "/leave") {
       conn.send(Message(TAG_LEAVE, ""));
-    } else if (command == "/join") {
-      std::string room_name;
-      iss >> room_name;
-      conn.send(Message(TAG_LEAVE, ""));
-      conn.send(Message(TAG_JOIN, room_name));
+      Message join_ok;
+      if (conn.receive(join_ok)) {
+        if (join_ok.tag == TAG_ERR) {
+          std::cerr << join_ok.data;
+        }
+        if (slogin_ok.tag != TAG_OK) {
+          std::cerr << "Error: Unexpected message from the server. No OK received.\n";
+          exit(1);
+        }
+      }
+    } else if (command == "/quit") {
+      if (conn.send(Message(TAG_QUIT, ""))) {
+        break;
+      }
     } else {
       std::string message;
       std::getline(iss, message);
