@@ -7,19 +7,6 @@
 #include "connection.h"
 #include "client_util.h"
 
-void reply(Connection conn) {
-  Message msg;
-  conn.receive(msg);
-  if (msg.tag == TAG_ERR) {
-    std::cerr << msg.data;
-    exit(1);
-  }
-  if (msg.tag != TAG_OK) {
-    std::cerr << "Error: Unexpected message from the server. No OK received.\n";
-    exit(1);
-  }
-}
-
 int main(int argc, char **argv) {
   if (argc != 4) {
     std::cerr << "Usage: ./sender [server_address] [port] [username]\n";
@@ -37,7 +24,7 @@ int main(int argc, char **argv) {
 
   // TODO: send slogin message
   conn.send(Message(TAG_SLOGIN, username));
-  reply(conn); 
+  conn.check_reply();
 
   // TODO: loop reading commands from user, sending messages to
   //       server as appropriate
@@ -51,13 +38,13 @@ int main(int argc, char **argv) {
       std::string room_name;
       iss >> room_name;
       conn.send(Message(TAG_JOIN, room_name));
-      reply(conn); 
+      conn.check_reply(); 
     } else if (command == "/leave") {
       conn.send(Message(TAG_LEAVE, ""));
-      reply(conn);
+      conn.check_reply(); 
     } else if (command == "/quit") {
       conn.send(Message(TAG_QUIT, ""));
-      reply(conn);
+      conn.check_reply(); 
       break;  
     } else {
       if (command[0] == '/') {
@@ -67,7 +54,7 @@ int main(int argc, char **argv) {
       std::string message;
       std::getline(iss, message);
       conn.send(Message(TAG_SENDALL, message));
-      reply(conn);
+      conn.check_reply(); 
     } 
   }
   return 0;
