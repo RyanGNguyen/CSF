@@ -93,13 +93,14 @@ bool Connection::receive(Message &msg) {
 
 void Connection::check_reply() {
   Message msg;
-  receive(msg);
-  if (msg.tag == TAG_ERR) {
-    std::cerr << msg.data;
-    exit(1);
-  }
-  if (msg.tag != TAG_OK) {
-    std::cerr << "Error: Unexpected message from the server. No OK received.\n";
-    exit(1);
+  if (receive(msg)) {
+    if (msg.tag == TAG_ERR) {
+      std::cerr << msg.data;
+      exit(1);
+    }
+    if (msg.tag != TAG_OK) {
+      std::cerr << "Error: Unexpected message from the server. No OK received.\n";
+      exit(1);
+    }
   }
 }

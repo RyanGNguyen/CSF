@@ -26,23 +26,24 @@ int main(int argc, char **argv) {
   // TODO: send rlogin and join messages (expect a response from
   //       the server for each one)
   conn.send(Message(TAG_RLOGIN, username));
-  if (!conn.send(Message(TAG_JOIN, room_name))) {
-    exit(1);
-  }
+  conn.check_reply();
+  conn.send(Message(TAG_JOIN, room_name));
+  conn.check_reply();
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
   while (true) {
     Message msg;
-    if (conn.receive(msg)) {
-      if (msg.tag == TAG_DELIVERY) {
-        char *data = (char *) msg.data.c_str();
-        strtok_r(data, ":", &data);   
-        char *sender = strtok_r(data, ":", &data);
-        char *message = strtok_r(data, ":", &data);
-        std::cout << sender << ": " << message << "\n";
-      }
-    } 
+    conn.receive(msg) 
+    if (msg.tag == TAG_DELIVERY) {
+      char *data = (char *) msg.data.c_str();
+      strtok_r(data, ":", &data);   
+      char *sender = strtok_r(data, ":", &data);
+      char *message = strtok_r(data, ":", &data);
+      std::cout << sender << ": " << message;
+    } else {
+      std::cerr << "Error: Unexpected message from server\n";
+    }
   }
   return 0;
 }
