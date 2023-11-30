@@ -7,6 +7,19 @@
 #include "connection.h"
 #include "client_util.h"
 
+void reply(Connection conn) {
+  Message msg;
+  conn.receive(msg);
+  if (msg.tag == TAG_ERR) {
+    std::cerr << msg.data;
+    exit(1);
+  }
+  if (msg.tag != TAG_OK) {
+    std::cerr << "Error: Unexpected message from the server. No OK received.\n";
+    exit(1);
+  }
+}
+
 int main(int argc, char **argv) {
   if (argc != 4) {
     std::cerr << "Usage: ./sender [server_address] [port] [username]\n";
@@ -21,23 +34,10 @@ int main(int argc, char **argv) {
 
   // TODO: connect to server
   conn.connect(server_hostname, server_port);
-  if (!conn.is_open()) {
-    std::cerr << "Error: Connection is not open.\n";
-    exit(1);
-  }
 
   // TODO: send slogin message
   conn.send(Message(TAG_SLOGIN, username));
-  Message slogin_ok;
-  conn.receive(slogin_ok);
-  if (slogin_ok.tag == TAG_ERR) {
-    std::cerr << slogin_ok.data;
-    exit(1);
-  } 
-  if (slogin_ok.tag != TAG_OK) {
-    std::cerr << "Error: Unexpected message from the server. No OK received.\n";
-    exit(1);
-  }
+  reply(conn); 
 
   // TODO: loop reading commands from user, sending messages to
   //       server as appropriate
@@ -51,37 +51,23 @@ int main(int argc, char **argv) {
       std::string room_name;
       iss >> room_name;
       conn.send(Message(TAG_JOIN, room_name));
-
-      Message join_ok;
-      if (conn.receive(join_ok)) {
-        if (join_ok.tag == TAG_ERR) {
-          std::cerr << join_ok.data;
-        }
-        if (slogin_ok.tag != TAG_OK) {
-          std::cerr << "Error: Unexpected message from the server. No OK received.\n";
-          exit(1);
-        }
-      }
+      reply(conn); 
     } else if (command == "/leave") {
       conn.send(Message(TAG_LEAVE, ""));
-      Message join_ok;
-      if (conn.receive(join_ok)) {
-        if (join_ok.tag == TAG_ERR) {
-          std::cerr << join_ok.data;
-        }
-        if (slogin_ok.tag != TAG_OK) {
-          std::cerr << "Error: Unexpected message from the server. No OK received.\n";
-          exit(1);
-        }
-      }
+      reply(conn);
     } else if (command == "/quit") {
-      if (conn.send(Message(TAG_QUIT, ""))) {
-        break;
-      }
+      conn.send(Message(TAG_QUIT, ""));
+      reply(conn);
+      break;  
     } else {
+      if (command[0] == '/') {
+        std::cerr << "Error: Invalid command\n";
+        continue;
+      }
       std::string message;
       std::getline(iss, message);
       conn.send(Message(TAG_SENDALL, message));
+      reply(conn);
     } 
   }
   return 0;
