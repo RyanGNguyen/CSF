@@ -32,8 +32,8 @@ int main(int argc, char **argv) {
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
+  Message msg;
   while (true) {
-    Message msg;
     conn.receive(msg); 
     if (msg.tag == TAG_DELIVERY) {
       char *data = (char *) msg.data.c_str();

@@ -47,16 +47,18 @@ bool Connection::is_open() const {
 
 void Connection::close() {
   // TODO: close the connection if it is open
-  Close(m_fd);
+  if (is_open()) {
+    Close(m_fd);
+  }
 }
 
 bool Connection::send(const Message &msg) {
   // TODO: send a message
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
-  std::string buffer = msg.tag + ":" + msg.data + "\n";
-  ssize_t n = rio_writen(m_fd, buffer.c_str(), buffer.length()); 
-  if (n == buffer.length()) {
+  std::string buf = msg.tag + ":" + msg.data + "\n";
+  ssize_t n = rio_writen(m_fd, buf.c_str(), buf.length()); 
+  if (n == (ssize_t) buf.length()) {
     m_last_result = SUCCESS;
     return true;
   } else {
@@ -69,10 +71,11 @@ bool Connection::receive(Message &msg) {
   // TODO: receive a message, storing its tag and data in msg
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
-  char buf[Message::MAX_LEN];
-  ssize_t n = rio_readlineb(&m_fdbuf, buf, Message::MAX_LEN);
+  char buf[Message::MAX_LEN + 1];
+  buf[0] = '\0';
+  ssize_t n = rio_readlineb(&m_fdbuf, buf, Message::MAX_LEN + 1);
   
-  if (n == Message::MAX_LEN) {
+  if (n == (ssize_t) strlen(buf)) {
     char* tag;
     char* data;
     tag = strtok_r(buf, ":", &data);
@@ -93,14 +96,13 @@ bool Connection::receive(Message &msg) {
 
 void Connection::check_reply() {
   Message msg;
-  if (receive(msg)) {
-    if (msg.tag == TAG_ERR) {
-      std::cerr << msg.data;
-      exit(1);
-    }
-    if (msg.tag != TAG_OK) {
-      std::cerr << "Error: Unexpected message from the server. No OK received.\n";
-      exit(1);
-    }
+  receive(msg); 
+  if (msg.tag == TAG_ERR) {
+    std::cerr << msg.data;
+    exit(1);
+  }
+  if (msg.tag != TAG_OK) {
+    std::cerr << "Error: Unexpected message from the server. No OK received.\n";
+    exit(1);
   }
 }
