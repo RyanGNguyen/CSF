@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
       iss >> room_name;
       conn.send(Message(TAG_JOIN, room_name));
       conn.receive(msg); 
-      conn.check_ERR(msg);  
+      if (conn.check_ERR(msg)) {continue;} 
       conn.check_OK(msg);
     } else if (command == "/leave") {
       conn.send(Message(TAG_LEAVE, ""));
