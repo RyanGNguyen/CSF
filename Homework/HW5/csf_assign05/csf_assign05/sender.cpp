@@ -48,12 +48,12 @@ int main(int argc, char **argv) {
     } else if (command == "/leave") {
       conn.send(Message(TAG_LEAVE, ""));
       conn.receive(msg); 
-      conn.check_ERR(msg); 
+      if (conn.check_ERR(msg)) {continue;} 
       conn.check_OK(msg);
     } else if (command == "/quit") {
       conn.send(Message(TAG_QUIT, ""));
       conn.receive(msg); 
-      conn.check_ERR(msg);  
+      if (conn.check_ERR(msg)) {continue;}  
       conn.check_OK(msg);
       break;  
     } else {
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
       }
       conn.send(Message(TAG_SENDALL, line));
       conn.receive(msg); 
-      conn.check_ERR(msg); 
+      if (conn.check_ERR(msg)) {continue;} 
       conn.check_OK(msg);
     } 
   }
