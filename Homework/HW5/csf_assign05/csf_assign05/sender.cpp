@@ -61,9 +61,7 @@ int main(int argc, char **argv) {
         std::cerr << "Error: Invalid command\n";
         continue;
       }
-      std::string message;
-      std::getline(iss, message);
-      conn.send(Message(TAG_SENDALL, message));
+      conn.send(Message(TAG_SENDALL, line));
       conn.receive(msg); 
       conn.check_ERR(msg); 
       conn.check_OK(msg);
