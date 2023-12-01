@@ -43,7 +43,8 @@ public:
 
   Result get_last_result() const { return m_last_result; }
 
-  void check_reply();
+  bool check_ERR(const Message &msg);
+  void check_OK(const Message &msg);
 
 private:
   // prohibit value semantics

@@ -24,7 +24,11 @@ int main(int argc, char **argv) {
 
   // TODO: send slogin message
   conn.send(Message(TAG_SLOGIN, username));
-  conn.check_reply();
+  Message msg;
+  conn.receive(msg); 
+  if (conn.check_ERR(msg)) {exit(1);}
+  conn.check_OK(msg);
+
 
   // TODO: loop reading commands from user, sending messages to
   //       server as appropriate
@@ -38,13 +42,19 @@ int main(int argc, char **argv) {
       std::string room_name;
       iss >> room_name;
       conn.send(Message(TAG_JOIN, room_name));
-      conn.check_reply(); 
+      conn.receive(msg); 
+      conn.check_ERR(msg);  
+      conn.check_OK(msg);
     } else if (command == "/leave") {
       conn.send(Message(TAG_LEAVE, ""));
-      conn.check_reply(); 
+      conn.receive(msg); 
+      conn.check_ERR(msg); 
+      conn.check_OK(msg);
     } else if (command == "/quit") {
       conn.send(Message(TAG_QUIT, ""));
-      conn.check_reply(); 
+      conn.receive(msg); 
+      conn.check_ERR(msg);  
+      conn.check_OK(msg);
       break;  
     } else {
       if (command[0] == '/') {
@@ -54,7 +64,9 @@ int main(int argc, char **argv) {
       std::string message;
       std::getline(iss, message);
       conn.send(Message(TAG_SENDALL, message));
-      conn.check_reply(); 
+      conn.receive(msg); 
+      conn.check_ERR(msg); 
+      conn.check_OK(msg);
     } 
   }
   return 0;
