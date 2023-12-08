@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include <iostream>
+#include <algorithm>
 #include <sstream>
 #include <memory>
 #include <set>
@@ -32,6 +33,13 @@ struct ClientInfo {
 // Client thread functions
 ////////////////////////////////////////////////////////////////////////
 
+bool is_valid(std::string &str); 
+void ltrim(std::string &s); 
+void rtrim(std::string &s);
+void trim(std::string &s);
+void chat_with_sender(Connection * conn, Server * server, User * user); 
+void chat_with_receiver(Connection * conn, Server * server, User * user); 
+
 namespace {
   void *worker(void *arg) {
     pthread_detach(pthread_self());
@@ -48,16 +56,20 @@ namespace {
     if (conn->receive(login)) {
       if (login.tag == TAG_SLOGIN || login.tag == TAG_RLOGIN) {
         if (!is_valid(login.data)) {
-          conn->send(new Message(TAG_ERR, "Invalid username!"));
+          Message username_err(TAG_ERR, "Invalid username!");
+          conn->send(username_err);
           return nullptr; 
         } 
-        conn->send(new Message(TAG_OK, ""));
+        Message ok(TAG_OK, "");
+        conn->send(ok);
       } else {
-        conn->send(new Message(TAG_ERR, "Wrong tag for login message!")); 
+        Message login_err(TAG_ERR,"Wrong tag for login message!"); 
+        conn->send(login_err); 
         return nullptr; 
       }
     } else {
-      conn->send(new Message(TAG_ERR, "Failed to receive the login message!"));
+      Message not_received(TAG_ERR, "Failed to receive the login message!");
+      conn->send(not_received);
       return nullptr; 
     }
 
@@ -73,115 +85,128 @@ namespace {
     }
     return nullptr;
   }
-  
-  bool is_valid(std::string &str) {
-    trim(str);
-    if (str.empty() || str.length() > 255) {
+}
+
+bool is_valid(std::string &str) {
+  trim(str);
+  if (str.empty() || str.length() > 255) {
+    return false;
+  }
+  for (char c : str) {
+    if (!isalnum(c)) {
       return false;
     }
-    for (char c : str) {
-      if (!isalnum(c)) {
-        return false;
-      }
-    }
-    return true;
   }
+  return true;
+}
 
-  // trim from start (in place)
-  static inline void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }));
-  }
+// trim from start (in place)
+void ltrim(std::string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+      return !std::isspace(ch);
+  }));
+}
 
-  // trim from end (in place)
-  static inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }).base(), s.end());
-  }
+// trim from end (in place)
+void rtrim(std::string &s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+      return !std::isspace(ch);
+  }).base(), s.end());
+}
 
-  // trim from both ends (in place)
-  static inline void trim(std::string &s) {
-    rtrim(s);
-    ltrim(s);
-  }
+// trim from both ends (in place)
+void trim(std::string &s) {
+  rtrim(s);
+  ltrim(s);
+}
 
-  void chat_with_sender(Connection * conn, Server * server, User * user) {
-    while (true) {
-      Message msg; 
-      if (!conn->receive(msg)) {
-        conn->send(new Message(TAG_ERR, "Failed to receive the message!"));
-        break; 
-      } 
-
-      if (msg.tag == TAG_JOIN) {
-        if (is_valid(msg.data)) {
-          Room * room = server->find_or_create_room(msg.data);
-          room->add_member(user);
-          user->room_name = msg.data;
-          conn->send(new Message(TAG_OK, ""));
-        } else {
-          conn->send(new Message(TAG_ERR, "Invalid room name!"));
-        }
-      } else if (msg.tag == TAG_SENDALL) {
-        if (user->room_name != "") {
-          Room * room = server->find_or_create_room(user->room_name);
-          room->broadcast_message(user->username, msg.data);
-          conn->send(new Message(TAG_OK, "")); 
-        } else {
-          conn->send(new Message(TAG_ERR, "You are not in a room!"));
-        }
-      } else if (msg.tag == TAG_LEAVE) {
-        if (user->room_name != "") {
-          Room * room = server->find_or_create_room(user->room_name);
-          room->remove_member(user);
-          user->room_name = ""; 
-          conn->send(new Message(TAG_OK, "")); 
-        } else {
-          conn->send(new Message(TAG_ERR, "You are not in a room!"));
-        }
-        conn->send(new Message(TAG_OK, ""));
-      } else if (msg.tag == TAG_QUIT) {
-        conn->send(new Message(TAG_OK, ""));
-        break; 
-      } else {
-        conn->send(new Message(TAG_ERR, "Invalid tag!"));
-      }
-    }
-    conn->close();
-    delete(user);
-  }
-
-  void chat_with_receiver(Connection * conn, Server * server, User * user) {
-    Message msg;
+void chat_with_sender(Connection * conn, Server * server, User * user) {
+  while (true) {
+    Message msg; 
     if (!conn->receive(msg)) {
-      conn->send(new Message(TAG_ERR, "Failed to receive the message!"));
+      Message not_received(TAG_ERR, "Failed to receive the message!");
+      conn->send(not_received);
+      break; 
     } 
 
     if (msg.tag == TAG_JOIN) {
-      if (!is_valid(msg.data)) {
-        conn->send(new Message(TAG_ERR, "Invalid room name!"));
-        return; 
-      } 
-      if (user->room_name != "") {
-        Room * old = server->find_or_create_room(user->room_name);
-        old->remove_member(user);
-      } 
-      Room * room = server->find_or_create_room(msg.data);
-      room->add_member(user);
-      user->room_name = msg.data;
-      conn->send(new Message(TAG_OK, ""));
-    } else {
-      conn->send(new Message(TAG_ERR, "Invalid tag!"));
-    }
-
-    while (true) {
-      Message * msg = user->mqueue.dequeue();
-      if (msg != nullptr) {
-        conn->send(msg);
-        delete(msg);
+      if (is_valid(msg.data)) {
+        Room * room = server->find_or_create_room(msg.data);
+        room->add_member(user);
+        user->room_name = msg.data;
+        Message ok(TAG_OK, "");
+        conn->send(ok);
+      } else {
+        Message room_name_err(TAG_ERR, "Invalid room name!");
+        conn->send(room_name_err);
       }
+    } else if (msg.tag == TAG_SENDALL) {
+      if (user->room_name != "") {
+        Room * room = server->find_or_create_room(user->room_name);
+        room->broadcast_message(user->username, msg.data);
+        Message ok(TAG_OK, "");
+        conn->send(ok); 
+      } else {
+        Message not_in_room(TAG_ERR, "You are not in a room!");
+        conn->send(not_in_room);
+      }
+    } else if (msg.tag == TAG_LEAVE) {
+      if (user->room_name != "") {
+        Room * room = server->find_or_create_room(user->room_name);
+        room->remove_member(user);
+        user->room_name = ""; 
+        Message ok(TAG_OK, "");
+        conn->send(ok); 
+      } else {
+        Message not_in_room(TAG_ERR, "You are not in a room!");
+        conn->send(not_in_room);
+      }
+    } else if (msg.tag == TAG_QUIT) {
+      Message ok(TAG_OK, "");
+      conn->send(ok); 
+      break; 
+    } else {
+      Message invalid_tag(TAG_ERR, "Invalid tag!");
+      conn->send(invalid_tag);
+    }
+  }
+  conn->close();
+  delete(user);
+}
+
+void chat_with_receiver(Connection * conn, Server * server, User * user) {
+  Message msg;
+  if (!conn->receive(msg)) {
+    Message not_received(TAG_ERR, "Failed to receive the message!");
+    conn->send(not_received);
+  } 
+
+  if (msg.tag == TAG_JOIN) {
+    if (!is_valid(msg.data)) {
+      Message room_name_err(TAG_ERR, "Invalid room name!");
+      conn->send(room_name_err);
+      return; 
+    } 
+    if (user->room_name != "") {
+      Room * old = server->find_or_create_room(user->room_name);
+      old->remove_member(user);
+    } 
+    Room * room = server->find_or_create_room(msg.data);
+    room->add_member(user);
+    user->room_name = msg.data;
+    Message ok(TAG_OK, "");
+    conn->send(ok); 
+  } else {
+    Message invalid_tag(TAG_ERR, "Invalid tag!");
+    conn->send(invalid_tag);
+  }
+
+  while (true) {
+    Message * msg = user->mqueue.dequeue();
+    if (msg != nullptr) {
+      Message reply(msg->tag, msg->data); 
+      delete(msg);
+      conn->send(reply);
     }
   }
 }
