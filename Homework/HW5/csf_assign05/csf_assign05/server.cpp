@@ -34,9 +34,9 @@ struct ClientInfo {
 ////////////////////////////////////////////////////////////////////////
 
 bool is_valid(std::string &str); 
-void ltrim(std::string &s); 
-void rtrim(std::string &s);
-void trim(std::string &s);
+std::string ltrim(const std::string &s); 
+std::string rtrim(const std::string &s);
+std::string trim(const std::string &s);
 void chat_with_sender(Connection * conn, Server * server, User * user); 
 void chat_with_receiver(Connection * conn, Server * server, User * user); 
 
@@ -53,9 +53,11 @@ namespace {
     //       TAG_SLOGIN or TAG_RLOGIN), send response
     Connection * conn = info->conn;
     Message login; 
+    std::string username; 
     if (conn->receive(login)) {
       if (login.tag == TAG_SLOGIN || login.tag == TAG_RLOGIN) {
-        if (!is_valid(login.data)) {
+        username = trim(login.data);
+        if (!is_valid(username)) {
           Message username_err(TAG_ERR, "Invalid username!");
           conn->send(username_err);
           return nullptr; 
@@ -77,7 +79,7 @@ namespace {
     //       receiver, communicate with the client (implementing
     //       separate helper functions for each of these possibilities
     //       is a good idea)
-    User * user = new User(login.data);
+    User * user = new User(username);
     if (login.tag == TAG_SLOGIN) {
       chat_with_sender(conn, info->server, user);
     } else {
@@ -88,7 +90,6 @@ namespace {
 }
 
 bool is_valid(std::string &str) {
-  trim(str);
   if (str.empty() || str.length() > 255) {
     return false;
   }
@@ -100,24 +101,27 @@ bool is_valid(std::string &str) {
   return true;
 }
 
-// trim from start (in place)
-void ltrim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+// trim from start
+std::string ltrim(const std::string &s) {
+  std::string str = s;
+  str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](unsigned char ch) {
       return !std::isspace(ch);
   }));
+  return str; 
 }
 
 // trim from end (in place)
-void rtrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+std::string rtrim(const std::string &s) {
+  std::string str = s;
+  str.erase(std::find_if(str.rbegin(), str.rend(), [](unsigned char ch) {
       return !std::isspace(ch);
-  }).base(), s.end());
+  }).base(), str.end());
+  return str;
 }
 
 // trim from both ends (in place)
-void trim(std::string &s) {
-  rtrim(s);
-  ltrim(s);
+std::string trim(const std::string &s) {
+  return rtrim(ltrim(s)); 
 }
 
 void chat_with_sender(Connection * conn, Server * server, User * user) {
@@ -130,10 +134,11 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
     } 
 
     if (msg.tag == TAG_JOIN) {
-      if (is_valid(msg.data)) {
-        Room * room = server->find_or_create_room(msg.data);
+      std::string room_name = trim(msg.data); 
+      if (is_valid(room_name)) {
+        Room * room = server->find_or_create_room(room_name);
         room->add_member(user);
-        user->room_name = msg.data;
+        user->room_name = room->get_room_name();
         Message ok(TAG_OK, "");
         conn->send(ok);
       } else {
@@ -149,6 +154,7 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       } else {
         Message not_in_room(TAG_ERR, "You are not in a room!");
         conn->send(not_in_room);
+        return; 
       }
     } else if (msg.tag == TAG_LEAVE) {
       if (user->room_name != "") {
@@ -160,6 +166,7 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       } else {
         Message not_in_room(TAG_ERR, "You are not in a room!");
         conn->send(not_in_room);
+        return; 
       }
     } else if (msg.tag == TAG_QUIT) {
       Message ok(TAG_OK, "");
@@ -168,10 +175,11 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
     } else {
       Message invalid_tag(TAG_ERR, "Invalid tag!");
       conn->send(invalid_tag);
+      return; 
     }
   }
-  conn->close();
   delete(user);
+  conn->close();
 }
 
 void chat_with_receiver(Connection * conn, Server * server, User * user) {
@@ -179,10 +187,12 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
   if (!conn->receive(msg)) {
     Message not_received(TAG_ERR, "Failed to receive the message!");
     conn->send(not_received);
+    return;
   } 
 
   if (msg.tag == TAG_JOIN) {
-    if (!is_valid(msg.data)) {
+    std::string room_name = trim(msg.data);
+    if (!is_valid(room_name)) {
       Message room_name_err(TAG_ERR, "Invalid room name!");
       conn->send(room_name_err);
       return; 
@@ -191,9 +201,9 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
       Room * old = server->find_or_create_room(user->room_name);
       old->remove_member(user);
     } 
-    Room * room = server->find_or_create_room(msg.data);
+    Room * room = server->find_or_create_room(room_name);
     room->add_member(user);
-    user->room_name = msg.data;
+    user->room_name = room_name;
     Message ok(TAG_OK, "");
     conn->send(ok); 
   } else {
@@ -202,13 +212,13 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
   }
 
   while (true) {
-    Message * msg = user->mqueue.dequeue();
-    if (msg != nullptr) {
-      Message reply(msg->tag, msg->data); 
-      delete(msg);
-      conn->send(reply);
+    Message * reply = user->mqueue.dequeue();
+    if (reply != nullptr) {
+      conn->send(*reply);
+      delete(reply);
     }
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -219,7 +229,7 @@ Server::Server(int port)
   : m_port(port)
   , m_ssock(-1) {
   // TODO: initialize mutex
-  pthread_mutex_init(&m_lock, nullptr); // Do not need to add pthread_mutexattr_t due to worker detaching for us
+  pthread_mutex_init(&m_lock, NULL); // Do not need to add pthread_mutexattr_t due to worker detaching for us
 }
 
 Server::~Server() {
@@ -231,17 +241,16 @@ bool Server::listen() {
   // TODO: use open_listenfd to create the server socket, return true
   //       if successful, false if not
   m_ssock = open_listenfd(std::to_string(m_port).c_str());
-  return m_ssock != -1;
+  return m_ssock >= 0;
 }
 
 void Server::handle_client_requests() {
   // TODO: infinite loop calling accept or Accept, starting a new
   //       pthread for each connected client
   while (true) {
-    int csock = Accept(m_ssock, nullptr, nullptr);
-    if (csock == -1) {
-      std::cerr << "Error: Could not accept the client connection!\n";
-      continue;               // may need to remove this
+    int csock = Accept(m_ssock, NULL, NULL);
+    if (csock < 0) {
+      std::cerr << "Error: Could not accept the client connection!\n";             
     }
     Connection * conn = new Connection(csock);
     struct ClientInfo * info = new ClientInfo(conn, this);
@@ -257,7 +266,7 @@ Room *Server::find_or_create_room(const std::string &room_name) {
   //       the named chat room, creating a new one if necessary
   Guard g(m_lock);
   if (m_rooms.find(room_name) == m_rooms.end()) {
-    Room *room = new Room(room_name);
+    Room * room = new Room(room_name);
     m_rooms.insert({room_name, room});
   } 
   return m_rooms.at(room_name);
