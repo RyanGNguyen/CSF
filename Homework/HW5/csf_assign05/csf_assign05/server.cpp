@@ -142,7 +142,7 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       } else {
         Message room_name_err(TAG_ERR, "Invalid room name!");
         conn->send(room_name_err);
-        continue;
+        return;
       }
     } else if (msg.tag == TAG_SENDALL) {
       if (user->room_name != "") {
@@ -153,7 +153,7 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       } else {
         Message not_in_room(TAG_ERR, "You are not in a room!");
         conn->send(not_in_room);
-        continue; 
+        return; 
       }
     } else if (msg.tag == TAG_LEAVE) {
       if (user->room_name != "") {
@@ -163,7 +163,7 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       } else {
         Message not_in_room(TAG_ERR, "You are not in a room!");
         conn->send(not_in_room);
-        continue; 
+        return; 
       }
     } else if (msg.tag == TAG_QUIT) {
       Message ok(TAG_OK, "");
@@ -172,7 +172,7 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
     } else {
       Message invalid_tag(TAG_ERR, "Invalid tag!");
       conn->send(invalid_tag);
-      continue;
+      return;
     }
   }
   delete(user);
@@ -199,8 +199,8 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
       old->remove_member(user);
     } 
     Room * room = server->find_or_create_room(room_name);
-    room->add_member(user);
     user->room_name = room_name;
+    room->add_member(user);
     Message ok(TAG_OK, "");
     conn->send(ok); 
   } else {
