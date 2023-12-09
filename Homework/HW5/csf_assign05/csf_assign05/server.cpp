@@ -130,49 +130,40 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
     if (!conn->receive(msg)) {
       Message not_received(TAG_ERR, "Failed to receive the message!");
       conn->send(not_received);
-      break; 
+      return; 
     } 
 
     if (msg.tag == TAG_JOIN) {
       std::string room_name = trim(msg.data); 
       if (is_valid(room_name)) {
-        Room * room = server->find_or_create_room(room_name);
-        room->add_member(user);
-        user->room_name = room->get_room_name();
+        user->room_name = room_name;
         Message ok(TAG_OK, "");
         conn->send(ok);
       } else {
         Message room_name_err(TAG_ERR, "Invalid room name!");
         conn->send(room_name_err);
+        continue;
       }
     } else if (msg.tag == TAG_SENDALL) {
       if (user->room_name != "") {
-        std::string line = trim(msg.data); 
-        if (is_valid(line)) {
-          Room * room = server->find_or_create_room(user->room_name);
-          room->broadcast_message(user->username, line);
-          Message ok(TAG_OK, "");
-          conn->send(ok); 
-        } else {
-          Message line_err(TAG_ERR, "Invalid message!");
-          conn->send(line_err);
-        }
+        Room * room = server->find_or_create_room(user->room_name);
+        room->broadcast_message(user->username, msg.data);
+        Message ok(TAG_OK, "");
+        conn->send(ok); 
       } else {
         Message not_in_room(TAG_ERR, "You are not in a room!");
         conn->send(not_in_room);
-        return; 
+        continue; 
       }
     } else if (msg.tag == TAG_LEAVE) {
       if (user->room_name != "") {
-        Room * room = server->find_or_create_room(user->room_name);
-        room->remove_member(user);
         user->room_name = ""; 
         Message ok(TAG_OK, "");
         conn->send(ok); 
       } else {
         Message not_in_room(TAG_ERR, "You are not in a room!");
         conn->send(not_in_room);
-        return; 
+        continue; 
       }
     } else if (msg.tag == TAG_QUIT) {
       Message ok(TAG_OK, "");
@@ -181,7 +172,7 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
     } else {
       Message invalid_tag(TAG_ERR, "Invalid tag!");
       conn->send(invalid_tag);
-      return; 
+      continue;
     }
   }
   delete(user);
@@ -215,6 +206,7 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
   } else {
     Message invalid_tag(TAG_ERR, "Invalid tag!");
     conn->send(invalid_tag);
+    return; 
   }
 
   while (true) {
