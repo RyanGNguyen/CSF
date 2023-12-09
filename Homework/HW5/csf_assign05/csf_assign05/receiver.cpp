@@ -26,19 +26,20 @@ int main(int argc, char **argv) {
   // TODO: send rlogin and join messages (expect a response from
   //       the server for each one)
   conn.send(Message(TAG_RLOGIN, username));
-  Message msg; 
-  conn.receive(msg); 
-  if (conn.check_ERR(msg)) {exit(1);}
-  conn.check_OK(msg);
+  Message start; 
+  conn.receive(start); 
+  if (conn.check_ERR(start)) {exit(1);}
+  conn.check_OK(start);
 
   conn.send(Message(TAG_JOIN, room_name));
-  conn.receive(msg); 
-  if (conn.check_ERR(msg)) {exit(1);}
-  conn.check_OK(msg);
+  conn.receive(start); 
+  if (conn.check_ERR(start)) {exit(1);}
+  conn.check_OK(start);
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
-  while (true) {
+  Message msg;
+  while (true) { 
     conn.receive(msg); 
     if (msg.tag == TAG_DELIVERY) {
       char *data = (char *) msg.data.c_str();

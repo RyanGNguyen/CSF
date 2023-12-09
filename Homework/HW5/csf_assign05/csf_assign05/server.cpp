@@ -33,7 +33,7 @@ struct ClientInfo {
 // Client thread functions
 ////////////////////////////////////////////////////////////////////////
 
-bool is_valid(std::string &str); 
+bool is_valid(const std::string &str); 
 std::string ltrim(const std::string &s); 
 std::string rtrim(const std::string &s);
 std::string trim(const std::string &s);
@@ -61,9 +61,10 @@ namespace {
           Message username_err(TAG_ERR, "Invalid username!");
           conn->send(username_err);
           return nullptr; 
-        } 
-        Message ok(TAG_OK, "");
-        conn->send(ok);
+        } else {
+          Message ok(TAG_OK, "");
+          conn->send(ok);
+        }
       } else {
         Message login_err(TAG_ERR,"Wrong tag for login message!"); 
         conn->send(login_err); 
@@ -89,7 +90,7 @@ namespace {
   }
 }
 
-bool is_valid(std::string &str) {
+bool is_valid(const std::string &str) {
   if (str.empty() || str.length() > 255) {
     return false;
   }
@@ -130,7 +131,7 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
     if (!conn->receive(msg)) {
       Message not_received(TAG_ERR, "Failed to receive the message!");
       conn->send(not_received);
-      return; 
+      break; 
     } 
 
     if (msg.tag == TAG_JOIN) {
@@ -142,10 +143,9 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       } else {
         Message room_name_err(TAG_ERR, "Invalid room name!");
         conn->send(room_name_err);
-        return;
       }
     } else if (msg.tag == TAG_SENDALL) {
-      if (user->room_name != "") {
+      if (user->room_name.length() > 0) {
         Room * room = server->find_or_create_room(user->room_name);
         room->broadcast_message(user->username, msg.data);
         Message ok(TAG_OK, "");
@@ -153,17 +153,15 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       } else {
         Message not_in_room(TAG_ERR, "You are not in a room!");
         conn->send(not_in_room);
-        return; 
       }
     } else if (msg.tag == TAG_LEAVE) {
-      if (user->room_name != "") {
+      if (user->room_name.length() > 0) {
         user->room_name = ""; 
         Message ok(TAG_OK, "");
         conn->send(ok); 
       } else {
         Message not_in_room(TAG_ERR, "You are not in a room!");
         conn->send(not_in_room);
-        return; 
       }
     } else if (msg.tag == TAG_QUIT) {
       Message ok(TAG_OK, "");
@@ -172,7 +170,6 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
     } else {
       Message invalid_tag(TAG_ERR, "Invalid tag!");
       conn->send(invalid_tag);
-      return;
     }
   }
   delete(user);
@@ -194,7 +191,7 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
       conn->send(room_name_err);
       return; 
     } 
-    if (user->room_name != "") {
+    if (user->room_name.length() > 0) {
       Room * old = server->find_or_create_room(user->room_name);
       old->remove_member(user);
     } 
@@ -216,7 +213,6 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
       delete(reply);
     }
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -264,8 +260,7 @@ Room *Server::find_or_create_room(const std::string &room_name) {
   //       the named chat room, creating a new one if necessary
   Guard g(m_lock);
   if (m_rooms.find(room_name) == m_rooms.end()) {
-    Room * room = new Room(room_name);
-    m_rooms.insert({room_name, room});
+    m_rooms.insert({room_name, new Room(room_name)});
   } 
   return m_rooms.at(room_name);
 }
