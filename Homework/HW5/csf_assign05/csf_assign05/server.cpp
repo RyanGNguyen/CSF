@@ -147,10 +147,16 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       }
     } else if (msg.tag == TAG_SENDALL) {
       if (user->room_name != "") {
-        Room * room = server->find_or_create_room(user->room_name);
-        room->broadcast_message(user->username, msg.data);
-        Message ok(TAG_OK, "");
-        conn->send(ok); 
+        std::string line = trim(msg.data); 
+        if (is_valid(line)) {
+          Room * room = server->find_or_create_room(user->room_name);
+          room->broadcast_message(user->username, line);
+          Message ok(TAG_OK, "");
+          conn->send(ok); 
+        } else {
+          Message line_err(TAG_ERR, "Invalid message!");
+          conn->send(line_err);
+        }
       } else {
         Message not_in_room(TAG_ERR, "You are not in a room!");
         conn->send(not_in_room);
