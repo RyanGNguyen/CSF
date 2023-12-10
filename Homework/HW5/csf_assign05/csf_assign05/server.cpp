@@ -25,8 +25,9 @@ struct ClientInfo {
   Connection * conn;
   Server * server;
 
-  ClientInfo(Connection * conn, Server * server)
-    : conn(conn), server(server) { }
+  ClientInfo(Connection * conn, Server * server): conn(conn), server(server) { }
+
+  ~ClientInfo() { delete conn; }
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -128,6 +129,7 @@ std::string trim(const std::string &s) {
 
 void chat_with_sender(Connection * conn, Server * server, User * user) {
   while (true) {
+    Room * room = nullptr;
     Message msg;
     if (!conn->receive(msg)) {
       Message not_received(TAG_ERR, "Failed to receive the message!");
@@ -138,7 +140,8 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
     if (msg.tag == TAG_JOIN) {
       std::string room_name = trim(msg.data); 
       if (is_valid(room_name)) {
-        user->room_name = room_name;
+        // user->room_name = room_name;
+        room = server->find_or_create_room(user->room_name);
         Message ok(TAG_OK, "");
         conn->send(ok);
       } else {
@@ -146,8 +149,9 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
         conn->send(room_name_err);
       }
     } else if (msg.tag == TAG_SENDALL) {
-      if (user->room_name.length() > 0) {
-        Room * room = server->find_or_create_room(user->room_name);
+      //if (user->room_name.length() > 0) {
+      if (room != nullptr) {
+        //Room * room = server->find_or_create_room(user->room_name);
         room->broadcast_message(user->username, msg.data);
         Message ok(TAG_OK, "");
         conn->send(ok); 
@@ -156,8 +160,10 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
         conn->send(not_in_room);
       }
     } else if (msg.tag == TAG_LEAVE) {
-      if (user->room_name.length() > 0) {
-        user->room_name = ""; 
+      // if (user->room_name.length() > 0) {
+      if (room != nullptr) {
+        // user->room_name = ""; 
+        room = nullptr;
         Message ok(TAG_OK, "");
         conn->send(ok); 
       } else {
@@ -192,7 +198,7 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
       return; 
     } 
     room = server->find_or_create_room(room_name);
-    user->room_name = room_name;
+    //user->room_name = room_name;
     room->add_member(user);
     Message ok(TAG_OK, "");
     conn->send(ok); 
@@ -263,5 +269,6 @@ Room *Server::find_or_create_room(const std::string &room_name) {
   if (m_rooms.find(room_name) == m_rooms.end()) {
     m_rooms.insert({room_name, new Room(room_name)});
   } 
-  return m_rooms.at(room_name);
+  Room * room = m_rooms.at(room_name); 
+  return room;
 }
