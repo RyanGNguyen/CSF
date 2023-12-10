@@ -86,6 +86,7 @@ namespace {
     } else {
       chat_with_receiver(conn, info->server, user);
     }
+    delete user;
     return nullptr;
   }
 }
@@ -127,7 +128,7 @@ std::string trim(const std::string &s) {
 
 void chat_with_sender(Connection * conn, Server * server, User * user) {
   while (true) {
-    Message msg; 
+    Message msg;
     if (!conn->receive(msg)) {
       Message not_received(TAG_ERR, "Failed to receive the message!");
       conn->send(not_received);
@@ -172,8 +173,6 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       conn->send(invalid_tag);
     }
   }
-  delete(user);
-  conn->close();
 }
 
 void chat_with_receiver(Connection * conn, Server * server, User * user) {
@@ -184,6 +183,7 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
     return;
   } 
 
+  Room * room = nullptr;
   if (msg.tag == TAG_JOIN) {
     std::string room_name = trim(msg.data);
     if (!is_valid(room_name)) {
@@ -191,11 +191,7 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
       conn->send(room_name_err);
       return; 
     } 
-    if (user->room_name.length() > 0) {
-      Room * old = server->find_or_create_room(user->room_name);
-      old->remove_member(user);
-    } 
-    Room * room = server->find_or_create_room(room_name);
+    room = server->find_or_create_room(room_name);
     user->room_name = room_name;
     room->add_member(user);
     Message ok(TAG_OK, "");
@@ -209,8 +205,12 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
   while (true) {
     Message * reply = user->mqueue.dequeue();
     if (reply != nullptr) {
-      conn->send(*reply);
-      delete(reply);
+      if (!conn->send(*reply)) {
+        delete reply;
+        room->remove_member(user);
+        return;
+      }
+      delete reply;
     }
   }
 }
@@ -249,8 +249,9 @@ void Server::handle_client_requests() {
     Connection * conn = new Connection(csock);
     struct ClientInfo * info = new ClientInfo(conn, this);
     pthread_t thr_id;
-    if (pthread_create(&thr_id, NULL, worker, info) != 0) {
+    if (pthread_create(&thr_id, NULL, worker, info) < 0) {
       std::cerr << "Error: pthread_create failed!\n";
+      delete info;
     }
   }
 }
