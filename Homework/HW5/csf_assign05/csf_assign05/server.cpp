@@ -128,8 +128,8 @@ std::string trim(const std::string &s) {
 }
 
 void chat_with_sender(Connection * conn, Server * server, User * user) {
-  while (true) {
-    Room * room = nullptr;
+  Room * room = nullptr;
+  while (true) {    
     Message msg;
     if (!conn->receive(msg)) {
       Message not_received(TAG_ERR, "Failed to receive the message!");
@@ -141,8 +141,14 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       std::string room_name = trim(msg.data); 
       if (is_valid(room_name)) {
         // user->room_name = room_name;
-        room = server->find_or_create_room(user->room_name);
+        room = server->find_or_create_room(room_name);
         Message ok(TAG_OK, "");
+        // if (room != nullptr) {
+        //   std::cout << "not nullptr ";
+        // } else {
+        //   std::cout << "is nullptr ";
+        // }
+        //std::cout << "sender room name: " << room->get_room_name() << std::endl;
         conn->send(ok);
       } else {
         Message room_name_err(TAG_ERR, "Invalid room name!");
@@ -152,6 +158,7 @@ void chat_with_sender(Connection * conn, Server * server, User * user) {
       //if (user->room_name.length() > 0) {
       if (room != nullptr) {
         //Room * room = server->find_or_create_room(user->room_name);
+        //std::cout << "sender room name: " << room->get_room_name() << std::endl;
         room->broadcast_message(user->username, msg.data);
         Message ok(TAG_OK, "");
         conn->send(ok); 
@@ -207,9 +214,10 @@ void chat_with_receiver(Connection * conn, Server * server, User * user) {
     conn->send(invalid_tag);
     return; 
   }
-
+  //std::cout << "receiver room name: " << room->get_room_name() << std::endl;
   while (true) {
     Message * reply = user->mqueue.dequeue();
+    //std::cout << reply->tag << std::endl;
     if (reply != nullptr) {
       if (!conn->send(*reply)) {
         delete reply;
@@ -266,9 +274,12 @@ Room *Server::find_or_create_room(const std::string &room_name) {
   // TODO: return a pointer to the unique Room object representing
   //       the named chat room, creating a new one if necessary
   Guard g(m_lock);
+  //Room * room = nullptr;
   if (m_rooms.find(room_name) == m_rooms.end()) {
-    m_rooms.insert({room_name, new Room(room_name)});
+    //room = new Room(room_name);
+    //m_rooms.insert({room_name, new Room(room_name)});
+    m_rooms[room_name] = new Room(room_name);
   } 
-  Room * room = m_rooms.at(room_name); 
+  Room * room = m_rooms[room_name]; 
   return room;
 }
