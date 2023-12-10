@@ -30,10 +30,9 @@ void Room::remove_member(User *user) {
 void Room::broadcast_message(const std::string &sender_username, const std::string &message_text) {
   // TODO: send a message to every (receiver) User in the room
   Guard g(lock);
-  if (members.size() != 0) {
-    std::string data = room_name + ":" + sender_username + ":" + message_text;
-    for (UserSet::iterator it = members.begin(); it != members.end(); it++) {
-      (*it)->mqueue.enqueue(new Message(TAG_DELIVERY, data));
-    }
+  
+  std::string data = room_name + ":" + sender_username + ":" + message_text;
+  for (UserSet::iterator it = members.begin(); it != members.end(); it++) {
+    (*it)->mqueue.enqueue(new Message(TAG_DELIVERY, data));
   }
 }
